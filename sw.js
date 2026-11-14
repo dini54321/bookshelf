@@ -1,8 +1,8 @@
 /* RahDas Bookshelf service worker. Caches the app itself and the cover pictures so the shelf opens offline.
    Data requests (POST to your script) are never cached or touched here. */
-const VERSION = 'v-25b6a6439e';
+const VERSION = 'v-461fb8c539';
 const SHELL = 'shell-' + VERSION, IMGS = 'covers-v1';
-const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
+const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192-v2.png', 'icon-512-v2.png', 'apple-touch-icon-v2.png'];
 const MAX_IMGS = 250;
 
 self.addEventListener('install', e => { e.waitUntil(caches.open(SHELL).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
