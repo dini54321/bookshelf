@@ -732,6 +732,7 @@
         <button type="submit" class="btn" id="saveBtn">Save to Google Sheet</button>
         <button type="button" class="btn light" onclick="closeModal('bookModal')">Cancel</button>
       </div>
+      <div class="savebar" style="margin-top:6px"><button type="button" class="btn light" id="delBtn" onclick="deleteBookClick()" style="display:none;color:#b3261e;border-color:#b3261e">🗑 Delete this book</button></div>
     </form>
   </div>
 </div>
@@ -1389,6 +1390,7 @@ function newBook() {
   setRating(0);
   setFormat(fmt === 'pdf' ? 'pdf' : 'paper', false);
   $('modalTitle').textContent = 'Add a book';
+  $('delBtn').style.display = 'none';
   paintCover();
   openModal('bookModal');
 }
@@ -1403,6 +1405,7 @@ function editBook(id) {
   setRating(ratingNum(b));
   setFormat(b.kind === 'pdf' ? 'pdf' : 'paper', true);
   $('modalTitle').textContent = 'Edit book';
+  $('delBtn').style.display = '';
   paintCover();
   openModal('bookModal');
 }
@@ -1483,6 +1486,19 @@ function saveBook(e) {
     toast(errMsg(err), true);
     if (bookId) refresh(true); // book itself saved; only the photo step failed
   });
+}
+
+function deleteBookClick() {
+  if (!editingBook) return;
+  if (!confirm('Delete "' + (editingBook.title || 'this book') + '" permanently from your sheet? This cannot be undone.')) return;
+  var btn = $('delBtn'); busy(btn, true, 'Deleting…');
+  gs('deleteBook', { id: editingBook.id, kind: editingBook.kind }).then(function () {
+    busy(btn, false);
+    closeModal('bookModal');
+    var pe = document.getElementById('peek'); if (pe && typeof closePeek === 'function') { try { closePeek(); } catch (x) {} }
+    toast('Book deleted ✓');
+    refresh(true);
+  }).catch(function (err) { busy(btn, false); toast(errMsg(err), true); });
 }
 
 /* ================= journal ================= */
