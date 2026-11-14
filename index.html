@@ -201,6 +201,8 @@
     .pf,.pb { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:3px 10px 10px 3px; overflow:hidden }
     .pf .cover { width:100%; height:100%; aspect-ratio:auto; border-radius:0 }
     .pb { transform:rotateY(180deg); background:linear-gradient(135deg,#dccdaa,#c2ab80) }
+    .pb img { width:100%; height:100%; object-fit:cover; display:block }
+    .pb.hasimg::after { content:''; position:absolute; inset:0; background:linear-gradient(270deg,rgba(0,0,0,.28),transparent 22px),linear-gradient(135deg,rgba(255,244,214,.14),rgba(120,90,40,.12)); pointer-events:none }
     .peek-x { position:absolute; top:calc(14px + env(safe-area-inset-top)); right:14px; z-index:3; width:40px; height:40px; border:0; border-radius:50%;
       background:rgba(255,255,255,.18); color:#fff; font-size:18px; opacity:0; transition:opacity .4s .2s }
     #peek.on .peek-x { opacity:1 }
@@ -777,7 +779,7 @@
   <div class="peek-stage">
     <div class="peek-book" id="peekBook">
       <div class="peek-page" id="peekPage"></div>
-      <div class="peek-cover"><div class="pf" id="peekFront"></div><div class="pb"></div></div>
+      <div class="peek-cover"><div class="pf" id="peekFront"></div><div class="pb" id="peekBack"></div></div>
     </div>
   </div>
 </div>
@@ -1131,6 +1133,9 @@ function peekBook(id, el) {
   var pk = $('peek'), bk = $('peekBook');
   bk.style.width = W + 'px'; bk.style.height = Math.round(W * 1.5) + 'px';
   $('peekFront').innerHTML = cover(b, 'nobar');
+  var pbk = $('peekBack');
+  pbk.className = 'pb' + (b.coverUrl ? ' hasimg' : '');
+  pbk.innerHTML = b.coverUrl ? '<img src="' + esc(b.coverUrl) + '" alt="" referrerpolicy="no-referrer" onerror="this.parentNode.classList.remove(\'hasimg\');this.remove()">' : '';
   $('peekPage').innerHTML = peekHTML(b); $('peekPage').scrollTop = 0;
   pk.classList.remove('open', 'on'); pk.classList.add('show'); pk.setAttribute('aria-hidden', 'false');
   document.body.classList.add('locked');
