@@ -4,7 +4,9 @@
   <base target="_top">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#23483d">
+  <meta name="theme-color" content="#0a1330">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <title>RahDas Bookshelf</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon-192-v2.png">
@@ -376,6 +378,57 @@
     .lockedpick { pointer-events:none; opacity:.55 }
     .pdfbox { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:10px 12px; margin:8px 0 }
   </style>
+
+  <style id="vangogh">
+    :root {
+      --bg:#f3e7c4; --surface:#fff8e4; --ink:#14213d; --muted:#6b6a5c; --line:#e3d3a3;
+      --brand:#1d3f7a; --brand2:#2f64b3; --on-brand:#fff; --soft:#e6ecf7; --accent:#d99a1e;
+      --shadow:0 2px 10px rgba(20,33,61,.12); --shadow-lg:0 10px 30px rgba(10,19,48,.3);
+      --serif:'Playfair Display',Georgia,'Times New Roman','Noto Serif Tamil','Nirmala UI','Latha',serif;
+      --h0:rgba(29,63,122,.07); --h1:rgba(47,100,179,.25); --h2:rgba(47,100,179,.5); --h3:rgba(29,63,122,.8); --h4:#14306a; --h3ink:#fff; --h4ink:#fff;
+      --veil:rgba(255,248,228,.86);
+    }
+    @media (prefers-color-scheme:dark) {
+      :root {
+        --bg:#0a1330; --surface:#122046; --ink:#f6ecc8; --muted:#a9b3d0; --line:#223566;
+        --brand:#e8b83a; --brand2:#f3cf6a; --on-brand:#101a3a; --soft:#1b2c5c; --accent:#f0a53a;
+        --shadow:0 2px 10px rgba(0,0,0,.35); --shadow-lg:0 10px 30px rgba(0,0,0,.55);
+        --h0:rgba(246,236,200,.06); --h1:rgba(232,184,58,.28); --h2:rgba(232,184,58,.5); --h3:rgba(232,184,58,.78); --h4:#f0c850; --h3ink:#101a3a; --h4ink:#101a3a;
+        --veil:rgba(18,32,70,.84);
+      }
+    }
+    body { font-family:'Lora',system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans Tamil','Nirmala UI','Latha',serif }
+    header, header[class] { background:linear-gradient(180deg,rgba(8,16,44,.12),rgba(8,16,44,.6)),var(--sky,none) center/cover,#14306a }
+    .brand { text-shadow:0 1px 6px rgba(0,0,0,.45) }
+    .greet { color:#f3ecc8; text-shadow:0 1px 4px rgba(0,0,0,.5) }
+    input:focus,select:focus,textarea:focus { box-shadow:0 0 0 3px rgba(47,100,179,.22) }
+    .progress i { background:linear-gradient(90deg,var(--accent),var(--brand2)) }
+    .peek-bg { background:rgba(6,12,34,.84) }
+    .recap { background:linear-gradient(rgba(8,16,44,.4),rgba(8,16,44,.7)),var(--sky,none) center/cover,#14306a; color:#fff }
+    .panel.today { background:linear-gradient(var(--veil),var(--veil)),var(--wheat,none) center/cover; }
+    .cal .day { background:var(--h0) }
+    .cal .day.l1 { background:var(--h1) } .cal .day.l2 { background:var(--h2) }
+    .cal .day.l3 { background:var(--h3); color:var(--h3ink) } .cal .day.l4 { background:var(--h4); color:var(--h4ink) }
+    .legend s.l0 { background:var(--h0) } .legend s.l1 { background:var(--h1) } .legend s.l2 { background:var(--h2) }
+    .legend s.l3 { background:var(--h3) } .legend s.l4 { background:var(--h4) }
+    .cal-pick { display:flex; gap:6px; flex:1; justify-content:center }
+    .cal-pick select { width:auto; min-width:0; padding:7px 10px; font-weight:700 }
+    .logrow { display:flex; gap:8px; align-items:center; padding:7px 0; border-top:1px dashed var(--line) }
+    .logrow span { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis }
+    .logrow input { width:72px; padding:7px 6px; text-align:center }
+    .logrow .btn { padding:7px 11px }
+    .panel.tbl { padding:4px 6px; overflow-x:auto }
+    .qt { width:100%; border-collapse:collapse }
+    .qt th { font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); text-align:left; padding:8px 8px; border-bottom:1px solid var(--line); font-weight:700 }
+    .qt td { padding:11px 8px; border-bottom:1px solid var(--line); vertical-align:middle }
+    .qt tr:last-child td { border-bottom:0 }
+    .qt tr[data-qu] { cursor:pointer } .qt tr[data-qu]:active { background:var(--soft) }
+    .qt .bt { font:700 15px var(--serif) } .qt .bs { font-size:12px; color:var(--muted); margin-top:2px }
+    .qt .bar { height:7px; border-radius:5px; background:var(--line); overflow:hidden; margin-bottom:4px; min-width:70px }
+    .qt .bar i { display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--brand2)) }
+    .qt .pg { font-size:12px; color:var(--muted); white-space:nowrap }
+    .qt .btn.sm { white-space:nowrap }
+  </style>
 </head>
 
 <body data-view="home">
@@ -397,19 +450,12 @@
   <section id="home" class="view active">
     <div id="todayCard"></div>
 
-    <h3>Continue reading</h3>
-    <div id="continue" class="scroller"></div>
+    <h3>Now reading</h3>
+    <div class="panel tbl" id="nowTable"></div>
 
-    <h3>At a glance</h3>
-    <div class="stats">
-      <div class="stat"><b id="total">–</b><span>Books</span></div>
-      <div class="stat"><b id="reading">–</b><span>Reading now</span></div>
-      <div class="stat"><b id="done">–</b><span>Completed</span></div>
-      <div class="stat"><b id="pages">–</b><span>Pages read</span></div>
-    </div>
-
-    <h3>Latest additions</h3>
-    <div id="latest" class="scroller"></div>
+    <h3>Up next</h3>
+    <div class="panel tbl" id="nextTable"></div>
+    <div class="meta" style="margin-top:8px">Tap a book to update its status or pages. It saves to this app and your Google Sheet.</div>
   </section>
 
   <!-- LIBRARY -->
@@ -507,11 +553,12 @@
     <div class="panel">
       <div class="cal-head">
         <button type="button" onclick="calMove(-1)" aria-label="Previous month">‹</button>
-        <b id="calTitle"></b>
+        <div class="cal-pick"><select id="calMonthSel" onchange="calPick()" aria-label="Month"></select><select id="calYearSel" onchange="calPick()" aria-label="Year"></select></div>
         <button type="button" onclick="calMove(1)" aria-label="Next month">›</button>
       </div>
+      <div style="text-align:center;margin:0 0 8px"><button type="button" class="btn light sm" onclick="calToday()">Today</button></div>
       <div class="cal" id="cal"></div>
-      <div class="legend">Less <s style="background:rgba(100,138,112,.1)"></s><s style="background:rgba(61,107,90,.28)"></s><s style="background:rgba(61,107,90,.5)"></s><s style="background:rgba(61,107,90,.78)"></s><s style="background:#2f5d50"></s> More</div>
+      <div class="legend">Less <s class="l0"></s><s class="l1"></s><s class="l2"></s><s class="l3"></s><s class="l4"></s> More</div>
       <div class="daydetail" id="dayDetail" style="display:none"></div>
     </div>
     <button class="btn light" style="margin-top:12px;width:100%" onclick="openLog()">＋ Log reading</button>
@@ -877,6 +924,28 @@
   </div>
 </div>
 
+<!-- QUICK UPDATE MODAL -->
+<div class="modal" id="quModal">
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head">
+      <h2 id="quTitle">Update book</h2>
+      <button class="x" type="button" onclick="closeModal('quModal')" aria-label="Close">✕</button>
+    </div>
+    <form onsubmit="quickSave(event)">
+      <div class="meta" id="quSub"></div>
+      <label class="lbl">Status</label>
+      <select id="quStatus"></select>
+      <div class="row">
+        <div style="flex:1"><label class="lbl">Pages read</label><input id="quPages" type="number" inputmode="numeric" min="0"></div>
+        <div style="flex:1"><label class="lbl">Total pages</label><input id="quTotal" type="number" inputmode="numeric" min="0"></div>
+      </div>
+      <div class="meta" id="quHint"></div>
+      <div class="savebar"><button type="submit" class="btn" id="quSave">Save</button><button type="button" class="btn light" onclick="quickFull()">✎ Full edit</button></div>
+    </form>
+  </div>
+</div>
+
 <!-- GOAL MODAL -->
 <div class="modal" id="goalModal">
   <div class="sheet">
@@ -1211,18 +1280,7 @@ function render() {
   $('greet').textContent = hello + ' · ' + reading.length + ' in progress';
   $('hGoal').textContent = doneYear.length + '/' + data.goal;
 
-  $('total').textContent = b.length;
-  $('reading').textContent = reading.length;
-  $('done').textContent = doneAll.length;
-  $('pages').textContent = b.reduce(function (s, x) { return s + (Number(x.pagesRead) || 0); }, 0).toLocaleString();
-
-  $('continue').innerHTML = !loaded
-    ? '<div class="empty" style="width:100%"><span class="spin"></span><br>Loading your shelf…</div>'
-    : (reading.slice(0, 8).map(readingCard).join('') ||
-       '<div class="panel empty" style="width:100%"><b>📖</b>No books in progress yet.<br>Tap ＋ to add one.</div>');
-  $('latest').innerHTML = b.slice(-10).reverse().map(function (x) {
-    return '<div class="shelf-item" data-edit="' + esc(x.id) + '">' + cover(x) + '<div class="t">' + esc(x.title) + '</div></div>';
-  }).join('') || '<div class="muted" style="padding:6px 2px">Nothing here yet.</div>';
+  renderHomeTables();
 
   renderChips();
   renderLibrary();
@@ -1351,6 +1409,10 @@ document.addEventListener('click', function (e) {
   var chip = t.closest('[data-chip]'); if (chip) { activeStatus = chip.dataset.chip; renderChips(); return renderLibrary(); }
   var lg = t.closest('[data-log]'); if (lg) return openLog(lg.dataset.log);
   var ld = t.closest('[data-logdate]'); if (ld) return openLog('', ld.dataset.logdate);
+  var q0 = t.closest('[data-qstart]'); if (q0) return quickStart(q0.dataset.qstart, q0);
+  var q1 = t.closest('[data-qu]'); if (q1) return openQuick(q1.dataset.qu);
+  var l0 = t.closest('[data-logsave]'); if (l0) return saveDayLog(+l0.dataset.logsave, l0);
+  var l1 = t.closest('[data-logdel]'); if (l1) return delDayLog(+l1.dataset.logdel, l1);
   var dy = t.closest('[data-day]'); if (dy) { if (dy.dataset.day <= today()) { selDay = selDay === dy.dataset.day ? '' : dy.dataset.day; renderCalendar(); } return; }
   var fp = t.closest('#fmtPick button'); if (fp) return setFormat(fp.dataset.fmt, false);
   var en = t.closest('[data-eng]'); if (en) return pickEnglish(Number(en.dataset.eng), en.dataset.to);
@@ -1505,6 +1567,141 @@ function deleteBookClick() {
     refresh(true);
   }).catch(function (err) { busy(btn, false); toast(errMsg(err), true); });
 }
+
+
+/* ================= home tables + quick update ================= */
+function isPlanned(b) { return ['Want to Read', 'Not Started'].indexOf(b.status) >= 0; }
+function qtRow(b, mid, last) {
+  return '<tr data-qu="' + esc(b.id) + '"><td><div class="bt">' + esc(b.title) + '</div><div class="bs">' + esc(b.englishTitle && b.englishTitle !== b.title ? b.englishTitle : (b.author || '')) + '</div></td>' +
+    '<td>' + mid + '</td><td>' + last + '</td></tr>';
+}
+function renderHomeTables() {
+  if (!loaded) { $('nowTable').innerHTML = $('nextTable').innerHTML = '<div class="empty"><span class="spin"></span><br>Loading your shelf…</div>'; return; }
+  var now = data.books.filter(function (b) { return ['Currently Reading', 'Partially'].indexOf(b.status) >= 0; });
+  var next = data.books.filter(isPlanned).slice(0, 3);
+  $('nowTable').innerHTML = now.length
+    ? '<table class="qt"><tr><th>Book</th><th>Progress</th><th>Status</th></tr>' + now.map(function (b) {
+        var tot = Number(b.totalPages) || 0, rd = Number(b.pagesRead) || 0;
+        var mid = tot ? '<div class="bar"><i style="width:' + Math.min(100, Math.round(rd / tot * 100)) + '%"></i></div><div class="pg">' + rd + ' / ' + tot + '</div>' : '<div class="pg">' + rd + ' pages</div>';
+        return qtRow(b, mid, '<span class="pill" data-s="' + slug(status(b)) + '">' + esc(status(b)) + '</span>');
+      }).join('') + '</table>'
+    : '<div class="empty"><b>📖</b>Nothing in progress.<br>Pick a book from “Up next”.</div>';
+  $('nextTable').innerHTML = next.length
+    ? '<table class="qt"><tr><th>Book</th><th>Pages</th><th>Status</th></tr>' + next.map(function (b) {
+        return qtRow(b, '<div class="pg">' + (Number(b.totalPages) ? b.totalPages : '—') + '</div>',
+          '<button type="button" class="btn sm" data-qstart="' + esc(b.id) + '">▶ Start</button>');
+      }).join('') + '</table>'
+    : '<div class="empty"><b>📚</b>No planned books.<br>Set a book’s status to “Want to Read” to queue it here.</div>';
+}
+var quBook = null;
+function openQuick(id) {
+  var b = data.books.find(function (x) { return String(x.id) === String(id); }); if (!b) return;
+  quBook = b;
+  $('quTitle').textContent = b.title;
+  $('quSub').textContent = (b.englishTitle && b.englishTitle !== b.title ? b.englishTitle + ' · ' : '') + (b.author || '');
+  $('quStatus').innerHTML = STATUSES.filter(function (x) { return x !== 'Not set'; }).map(function (x) { return '<option>' + x + '</option>'; }).join('');
+  $('quStatus').value = isPlanned(b) ? 'Currently Reading' : (b.status || 'Currently Reading');
+  $('quPages').value = Number(b.pagesRead) || 0;
+  $('quTotal').value = Number(b.totalPages) || '';
+  $('quHint').textContent = isPlanned(b) ? 'Saving will start this book today.' : '';
+  openModal('quModal');
+}
+function quickPayload(b, st, pr, tot) {
+  if (tot && pr > tot) pr = tot;
+  if (st === 'Completed' && tot) pr = tot;
+  else if (tot && pr >= tot && st !== 'Completed') st = 'Completed';
+  var pl = { id: b.id, kind: b.kind, title: b.title, status: st, pagesRead: pr, totalPages: tot || '' };
+  var t = today();
+  if (['Currently Reading', 'Partially', 'Completed'].indexOf(st) >= 0 && !b.startedOn) pl.startedOn = t;
+  if (st === 'Completed') { if (!b.completedOn) pl.completedOn = t; }
+  else if (b.status === 'Completed') pl.completedOn = '';
+  var added = pr - (Number(b.pagesRead) || 0);
+  if (added > 0) pl.logPages = added;
+  return pl;
+}
+function quickSave(e) {
+  e.preventDefault(); if (!quBook) return;
+  var pl = quickPayload(quBook, $('quStatus').value, Math.max(0, Number($('quPages').value) || 0), Math.max(0, Number($('quTotal').value) || 0));
+  var btn = $('quSave'); busy(btn, true);
+  gs('saveBook', pl).then(function () { busy(btn, false); closeModal('quModal'); toast('Updated ✓'); refresh(true); })
+    .catch(function (err) { busy(btn, false); toast(errMsg(err), true); });
+}
+function quickStart(id, btn) {
+  var b = data.books.find(function (x) { return String(x.id) === String(id); }); if (!b) return;
+  busy(btn, true, '…');
+  gs('saveBook', { id: b.id, kind: b.kind, title: b.title, status: 'Currently Reading', startedOn: b.startedOn || today() })
+    .then(function () { busy(btn, false); toast('Started “' + b.title + '” ✓'); refresh(true); })
+    .catch(function (err) { busy(btn, false); toast(errMsg(err), true); });
+}
+function quickFull() { var id = quBook && quBook.id; closeModal('quModal'); if (id != null) editBook(id); }
+
+/* ================= Van Gogh-style scenes (painted with code; original, not a copy of any painting) ================= */
+function paintScene(kind, W, H, seed) {
+  var c = document.createElement('canvas'); c.width = W; c.height = H;
+  var x = c.getContext('2d'), s = seed || 7, night = kind === 'night';
+  function R() { s = (s * 16807) % 2147483647; return s / 2147483647; }
+  var g = x.createLinearGradient(0, 0, 0, H);
+  if (night) { g.addColorStop(0, '#0a1a4a'); g.addColorStop(.6, '#1b3f8a'); g.addColorStop(1, '#0f2557'); }
+  else { g.addColorStop(0, '#8fbce8'); g.addColorStop(.55, '#f2da8c'); g.addColorStop(1, '#d9a02e'); }
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  var pal = night ? ['#12306e', '#1f4e9c', '#3a74c9', '#6fa0dc', '#a9c8ee', '#e9f0ff', '#0b1f55'] : ['#8fbce8', '#bcd8f0', '#f6e7a8', '#f2cf62', '#e5ad35', '#fff6cf', '#c98f23'];
+  var V = night ? [[W * .62, H * .38, 1], [W * .3, H * .3, -1]] : [[W * .5, H * .3, 1]];
+  function field(px, py) {
+    var vx = Math.sin(py * .03) * .8, vy = Math.cos(px * .02) * .5;
+    V.forEach(function (v) {
+      var dx = px - v[0], dy = py - v[1], d = Math.sqrt(dx * dx + dy * dy) + 1, w = 2.4 * Math.exp(-d / (H * .9));
+      vx += -dy / d * w * v[2]; vy += dx / d * w * v[2];
+    });
+    return Math.atan2(vy, vx);
+  }
+  var skyH = night ? H : H * .66, n = Math.round(W * skyH / 52);
+  x.lineCap = 'round';
+  for (var i = 0; i < n; i++) {
+    var px = R() * W, py = R() * skyH, k = (Math.sin(px * .03 + py * .02) + 1) / 2 + R() * .4;
+    x.strokeStyle = pal[Math.min(pal.length - 1, Math.floor(k * pal.length * .8))];
+    x.lineWidth = 2 + R() * 2.4; x.globalAlpha = .55 + R() * .4;
+    x.beginPath(); x.moveTo(px, py);
+    for (var j = 0; j < 14; j++) { var a = field(px, py); px += Math.cos(a) * 2.8; py += Math.sin(a) * 2.8; x.lineTo(px, py); }
+    x.stroke();
+  }
+  x.globalAlpha = 1;
+  function halo(cx, cy, r, rings, col, alpha) {
+    for (var q = 0; q < rings; q++) {
+      x.strokeStyle = col; x.globalAlpha = alpha * (1 - q / rings); x.lineWidth = 2.6;
+      x.beginPath(); x.arc(cx, cy, r * (1 + q * .38), 0, Math.PI * 2); x.stroke();
+    }
+    x.globalAlpha = 1;
+  }
+  function orb(cx, cy, r, core) { halo(cx, cy, r, 6, '#f6d95b', .75); x.fillStyle = core; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill(); }
+  if (night) {
+    orb(W * .88, H * .27, H * .085, '#fbe98a');
+    for (var st = 0; st < 7; st++) { var sx = W * (.1 + R() * .68), sy = H * (.08 + R() * .5); orb(sx, sy, 4 + R() * 3, '#fff3b0'); }
+    for (var cy = 0; cy < 340; cy++) {
+      var t = R(), yy = H - t * H * .96, half = 24 * Math.pow(Math.sin(Math.PI * Math.min(1, t * 1.04)), .6), cxp = W * .1 + Math.sin(t * 5) * 6 + (R() * 2 - 1) * half;
+      x.strokeStyle = ['#07130f', '#10281c', '#1c3a2a'][Math.floor(R() * 3)]; x.lineWidth = 3 + R() * 2.5;
+      x.beginPath(); x.moveTo(cxp, yy); x.lineTo(cxp + (R() * 6 - 3), yy - 14); x.stroke();
+    }
+  } else {
+    orb(W * .78, H * .22, H * .09, '#fff2a8');
+    for (var w2 = 0; w2 < W * H * .35 / 38; w2++) {
+      var wx = R() * W, wy = H * .62 + R() * H * .38;
+      x.strokeStyle = ['#e5ad35', '#f2cf62', '#c98f23', '#f6e7a8', '#a8741a'][Math.floor(R() * 5)];
+      x.lineWidth = 2.4 + R() * 2; x.globalAlpha = .85;
+      x.beginPath(); x.moveTo(wx, wy); x.quadraticCurveTo(wx + 3, wy - 9, wx + 7 + R() * 5, wy - 18); x.stroke();
+    }
+    x.globalAlpha = 1;
+  }
+  return c.toDataURL('image/jpeg', .8);
+}
+(function paintThemes() {
+  setTimeout(function () {
+    try {
+      var root = document.documentElement.style;
+      root.setProperty('--sky', 'url(' + paintScene('night', 900, 300, 11) + ')');
+      root.setProperty('--wheat', 'url(' + paintScene('wheat', 900, 300, 5) + ')');
+    } catch (e) { /* theme image is optional */ }
+  }, 0);
+})();
 
 /* ================= journal ================= */
 function newJournal() { $('jdate').value = today(); $('jtext').value = ''; openModal('journalModal'); }
@@ -2285,17 +2482,54 @@ function renderCalendar() {
       '" data-day="' + ds + '">' + d + (p ? '<i>' + p + '</i>' : '') + '</button>';
   }
   $('cal').innerHTML = html;
-  $('calTitle').textContent = monthName(calY, calM, true);
+  fillCalPickers();
 
   var det = $('dayDetail');
   if (!selDay) { det.style.display = 'none'; return; }
   var entries = (data.log || []).filter(function (r) { return r.date === selDay; });
   var total = entries.reduce(function (a, r) { return a + r.pages; }, 0);
+  dayGroups = []; var gi = {};
+  entries.forEach(function (r) {
+    var k = r.bookId ? 'i' + r.bookId : 't' + r.bookTitle;
+    if (gi[k] == null) { gi[k] = dayGroups.length; dayGroups.push({ bookId: r.bookId || '', title: r.bookTitle || 'Book', pages: 0 }); }
+    dayGroups[gi[k]].pages += r.pages;
+  });
   det.style.display = '';
   det.innerHTML = '<div class="row between"><b>' + esc(selDay) + '</b><span class="meta">' + total + ' pages</span></div>' +
-    (entries.length ? entries.map(function (r) { return '<div class="row between" style="padding:5px 0"><span>' + esc(r.bookTitle || 'Book') + '</span><b>' + r.pages + '</b></div>'; }).join('')
+    (dayGroups.length ? dayGroups.map(function (g, i) {
+      return '<div class="logrow"><span>' + esc(g.title) + '</span><input type="number" min="0" inputmode="numeric" id="lgi' + i + '" value="' + g.pages + '" aria-label="Pages">' +
+        '<button type="button" class="btn sm" data-logsave="' + i + '">Save</button>' +
+        '<button type="button" class="btn light sm" data-logdel="' + i + '" aria-label="Delete this log">🗑</button></div>';
+    }).join('') + '<div class="meta" style="padding:4px 0">Change the pages and tap Save. Set 0 (or tap 🗑) to remove the log; the book’s pages read go down too.</div>'
       : '<div class="meta" style="padding:6px 0">Nothing logged on this day.</div>') +
     '<button class="btn light sm" style="margin-top:8px" data-logdate="' + esc(selDay) + '">＋ Add reading for this day</button>';
+}
+var dayGroups = [];
+function fillCalPickers() {
+  var cur = +today().slice(0, 4), minY = cur - 2, ms = $('calMonthSel'), ys = $('calYearSel');
+  (data.log || []).forEach(function (r) { var y = +String(r.date).slice(0, 4); if (y && y < minY) minY = y; });
+  var maxY = Math.max(cur, calY);
+  if (!ms.options.length) for (var m = 1; m <= 12; m++) ms.add(new Option(monthName(2000, m, false), m));
+  if (ys.options.length !== maxY - Math.min(minY, calY) + 1) {
+    ys.innerHTML = '';
+    for (var y = maxY; y >= Math.min(minY, calY); y--) ys.add(new Option(y, y));
+  }
+  ms.value = calM; ys.value = calY;
+}
+function calPick() { calM = +$('calMonthSel').value; calY = +$('calYearSel').value; selDay = ''; renderCalendar(); }
+function calToday() { var t = today(); calY = +t.slice(0, 4); calM = +t.slice(5, 7); selDay = t; renderCalendar(); }
+function saveDayLog(i, btn, force0) {
+  var g = dayGroups[i]; if (!g) return;
+  var n = force0 ? 0 : Math.max(0, Math.floor(Number($('lgi' + i).value) || 0));
+  busy(btn, true, '…');
+  gs('setLogPages', { date: selDay, bookId: g.bookId, title: g.title, pages: n }).then(function () {
+    busy(btn, false); toast(n ? 'Log updated ✓' : 'Log removed ✓'); refresh(true);
+  }).catch(function (err) { busy(btn, false); toast(errMsg(err), true); });
+}
+function delDayLog(i, btn) {
+  var g = dayGroups[i]; if (!g) return;
+  if (!confirm('Remove ' + g.pages + ' page' + (g.pages === 1 ? '' : 's') + ' logged for "' + g.title + '" on ' + selDay + '? The book’s pages read will go down by the same amount.')) return;
+  saveDayLog(i, btn, true);
 }
 
 function openLog(bookId, date) {
