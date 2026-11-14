@@ -968,13 +968,26 @@ function apiCall(fn, arg) {
     shownOffline = false;
     if (fn === 'getLibraryData') { try { lsSet('rb_cache', JSON.stringify(j.result)); } catch (e) {} }
     return j.result;
-  }, function () {                                                    // network failure
+  }, function () {                                                    // network failure, or a reply that is not data
     if (fn === 'getLibraryData') {
       var c = lsGet('rb_cache');
       if (c) { if (!shownOffline) { shownOffline = true; toast('Offline — showing your saved shelf'); } return JSON.parse(c); }
     }
-    throw new Error('No internet connection. Try again when you are online.');
+    return diagnose(url).then(function (m) { throw new Error(m); });
   });
+}
+/* Works out WHY a request failed, so the message says what to fix. */
+function diagnose(url) {
+  if (navigator.onLine === false) return Promise.resolve('You are offline. Try again when you have a connection.');
+  return fetch(url + (url.indexOf('?') >= 0 ? '&' : '?') + 'api=ping', { redirect: 'follow' })
+    .then(function (r) { return r.text(); })
+    .then(function (t) {
+      var j; try { j = JSON.parse(t); } catch (e) { j = null; }
+      if (!j) return 'Your script answered with a web page instead of data. In Apps Script open Deploy → Manage deployments → ✏ Edit → Version: New version → Deploy, so the newest Code.gs is live.';
+      return j.ok ? 'The script is reachable but did not accept the request. Check the access key, then try again.' : 'Unexpected reply from the script.';
+    }, function () {
+      return 'Google blocked the request. In Apps Script open Deploy → Manage deployments → ✏ Edit and set "Who has access" to Anyone, then Deploy a New version. Also check the URL ends in /exec.';
+    });
 }
 function showConnect(msg) {
   if (!HOSTED) return;
