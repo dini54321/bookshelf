@@ -680,6 +680,10 @@
       <details style="margin-bottom:10px"><summary class="muted">Phone notification not arriving (error 429)?</summary>
         <div class="meta" style="margin:6px 0">The free ntfy.sh server sometimes refuses Google’s servers. Fix: make a free account at ntfy.sh (in a browser), open Account → Access tokens → Create token, and paste the token (starts with tk_) here. Your topic stays the same.</div>
         <input id="remNtfyTok" placeholder="ntfy access token (tk_…)" autocomplete="off"></details>
+      <details style="margin-bottom:10px"><summary class="muted">Telegram (reliable alternative to ntfy)</summary>
+        <div class="meta" style="margin:6px 0">1) In Telegram, search <b>@BotFather</b>, send <b>/newbot</b>, choose a name, and copy the token it gives you. 2) Open your new bot, tap <b>Start</b> and send “hi”. 3) Paste the token below and tap Save reminder – the app finds your chat by itself. Telegram then shows a normal popup on your phone.</div>
+        <input id="remTgTok" placeholder="Telegram bot token" autocomplete="off" style="margin-bottom:6px">
+        <div class="meta" id="remTgState"></div></details>
       <details style="margin-bottom:10px"><summary class="muted">WhatsApp (optional, uses the free CallMeBot service)</summary>
         <div class="meta" style="margin:6px 0">One-time setup: save +34 644 51 95 23 in your contacts, send it the WhatsApp message “I allow callmebot to send me messages”, and it replies with your key. Enter your number with country code and the key here. CallMeBot is a third-party service and can change or stop.</div>
         <input id="remWaPhone" placeholder="Phone, e.g. +447700900123" inputmode="tel" style="margin-bottom:6px">
@@ -3152,24 +3156,41 @@ function genTopic() {
 }
 function remPayload(on) {
   return { on: on, time: $('remHour').value || '20:00', email: $('remEmail').checked, ntfyTopic: $('remNtfy').value,
-    waPhone: $('remWaPhone').value, waKey: $('remWaKey').value, ntfyToken: $('remNtfyTok').value };
+    waPhone: $('remWaPhone').value, waKey: $('remWaKey').value, ntfyToken: $('remNtfyTok').value, tgToken: $('remTgTok').value };
 }
 function testReminder(btn) {
   busy(btn, true, 'Sending…');
-  gs('setReminder', remPayload(remState.on)).then(function (r) { remState = r; return gs('testReminder'); })
-    .then(function (r) { busy(btn, false); toast(r.result); }).catch(function (err) { busy(btn, false); toast(errMsg(err), true); });
+  var res = [];
+  gs('setReminder', remPayload(remState.on)).then(function (r) {
+    remState = r;
+    var chans = [];
+    if (r.email !== false) chans.push('email');
+    if (r.ntfyTopic) chans.push('ntfy');
+    if (r.tgSet) chans.push('tg');
+    if (r.waPhone && r.waKeySet) chans.push('wa');
+    if (!chans.length) throw new Error('Switch on at least one channel first.');
+    return chans.reduce(function (p, ch) {            // one short request per channel, so a slow service cannot drop the connection
+      return p.then(function () {
+        btn.innerHTML = '<span class="spin"></span> ' + (ch === 'ntfy' ? 'Phone…' : ch === 'tg' ? 'Telegram…' : ch === 'wa' ? 'WhatsApp…' : 'Email…');
+        return gs('testReminder', { ch: ch }).then(function (x) { res.push(x.result); }, function (e) { res.push((ch === 'ntfy' ? 'phone notification' : ch === 'tg' ? 'Telegram' : ch === 'wa' ? 'WhatsApp' : 'email') + ' ✗ ' + errMsg(e)); });
+      });
+    }, Promise.resolve());
+  }).then(function () { busy(btn, false); toast(res.join(' · ')); })
+    .catch(function (err) { busy(btn, false); toast(errMsg(err), true); });
 }
 function paintReminder() {
   $('remHour').value = remState.time || (('0' + remState.hour).slice(-2) + ':00');
   $('remEmail').checked = remState.email !== false;
   if (document.activeElement !== $('remNtfy')) $('remNtfy').value = remState.ntfyTopic || '';
   if (document.activeElement !== $('remWaPhone')) $('remWaPhone').value = remState.waPhone || '';
+  $('remTgTok').placeholder = remState.tgTokenSet ? 'Token saved – leave empty to keep it' : 'Telegram bot token';
+  $('remTgState').textContent = remState.tgSet ? '✓ Telegram is connected.' : remState.tgTokenSet ? 'Token saved, but no chat found yet: open your bot in Telegram, tap Start, send “hi”, then tap Save reminder again.' : '';
   $('remNtfyTok').placeholder = remState.ntfyTokenSet ? 'Token saved – leave empty to keep it' : 'ntfy access token (tk_…)';
   $('remWaKey').placeholder = remState.waKeySet ? 'Key saved – leave empty to keep it' : 'CallMeBot key';
   $('remOff').style.display = remState.on ? '' : 'none';
   $('remMsg').textContent = remState.on
     ? 'On — at ' + fmtTime(remState.time || (remState.hour + ':00')) + ' on days you haven’t logged any reading, sent by: ' +
-      [remState.email !== false ? 'email' : '', remState.ntfyTopic ? 'phone notification' : '', remState.waPhone && remState.waKeySet ? 'WhatsApp' : ''].filter(Boolean).join(', ') + '.'
+      [remState.email !== false ? 'email' : '', remState.ntfyTopic ? 'phone notification' : '', remState.tgSet ? 'Telegram' : '', remState.waPhone && remState.waKeySet ? 'WhatsApp' : ''].filter(Boolean).join(', ') + '.'
     : 'Off';
 }
 function loadReminder() {
