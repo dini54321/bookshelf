@@ -480,11 +480,20 @@
     .pk-quick select,.pk-quick input { width:100%; padding:9px 8px; min-width:0 } .pk-quick input { text-align:center } .pk-quick .btn { flex-basis:100%; padding:11px }
     .logrow { flex-wrap:wrap } .logrow span { flex-basis:100%; font-weight:700 }
     .logrow input[type=date] { width:auto; flex:1; min-width:130px }
-  .ocr-wrap{margin-top:6px;border-radius:12px;overflow:hidden;background:#000;line-height:0}#ocrCv{touch-action:none;display:block;max-width:100%}
+  .recap .rb { font-family:'Nunito Sans',system-ui,sans-serif; font-size:60px; line-height:1; margin:8px 0 10px }
+.recap.tap { cursor:pointer } .recap .rhint { font-size:12px; opacity:.75; margin-top:8px; background:none; padding:0 }
+.stat.tap, .hl.tap { cursor:pointer } .hl.tap:active, .stat.tap:active { opacity:.7 } .hl.tap span:last-child::after { content:' ›'; opacity:.5 }
+.fl-row { display:flex; align-items:center; gap:12px; width:100%; text-align:left; padding:8px; margin-bottom:6px; border:1px solid var(--line); border-radius:14px; background:var(--surface); color:inherit; font:inherit; cursor:pointer }
+.fl-row .cover { flex:none; width:40px; height:60px; border-radius:6px } .fl-row .fl-t { flex:1; min-width:0 } .fl-row b { display:block; overflow-wrap:anywhere }
+.fl-row i { display:block; font-style:normal; font-size:12px; color:var(--muted) } .fl-row .fl-m { flex:none; text-align:right; font-size:12px; color:var(--muted) }
+.msel { width:100%; display:flex; justify-content:space-between; align-items:center; gap:10px; padding:11px 14px; border:1px solid var(--line); border-radius:12px; background:transparent; color:inherit; font:inherit; text-align:left; cursor:pointer }
+.msel span:first-child { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+#pfPanel { margin-top:8px } #popupFieldsBox { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px }
+.ocr-wrap{margin-top:6px;border-radius:12px;overflow:hidden;background:#000;line-height:0}#ocrCv{touch-action:none;display:block;max-width:100%}
 .bk-search{width:100%;margin-bottom:6px}.bk-list{width:100%;min-height:128px}
-#hTargets{padding:0 14px}.tgrow{display:flex;gap:8px;margin-top:10px}.tg{flex:1;background:var(--card,#fffdf6);border:1px solid var(--line,#e2dac4);border-radius:14px;padding:10px 12px;min-width:0}
-.tg-t{font-size:12px;opacity:.7;text-transform:uppercase;letter-spacing:.04em}.tg b{display:block;font-size:20px;margin-top:2px}.tg b span{font-size:12px;font-weight:600;opacity:.7}
-.tg-bar{height:6px;border-radius:4px;background:rgba(0,0,0,.08);margin-top:6px;overflow:hidden}.tg-bar i{display:block;height:100%;background:linear-gradient(90deg,#b88a3c,#d8b25a)}
+#hTargets{padding:0 14px}.tgrow{display:flex;gap:8px;margin-top:10px}.tg{flex:1;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0;box-shadow:var(--shadow,0 1px 3px rgba(0,0,0,.12))}
+.tg-t{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}.tg b{display:block;font-size:20px;margin-top:2px}.tg b span{font-size:12px;font-weight:600;color:var(--muted)}
+.tg-bar{height:7px;border-radius:4px;background:var(--line);margin-top:8px;overflow:hidden}.tg-bar i{display:block;height:100%;background:linear-gradient(90deg,#b88a3c,#d8b25a)}
 .nudge{margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(216,178,90,.18);border:1px solid rgba(184,138,60,.5);font-size:14px}
 .trow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.trow .pk-chk{flex:1;min-width:150px}.trow input[type=number]{width:90px}
 .ql-row2{display:flex;align-items:center;gap:6px;margin-bottom:6px}.ql-row2 .ql-row{flex:1;margin:0;min-width:0}.ql-x{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--line,#d9d2c0);background:transparent;color:inherit;font-size:16px;cursor:pointer}.ql-x:disabled{opacity:.4}
@@ -717,9 +726,12 @@
     </div>
     <h3>Book popup fields</h3>
     <div class="panel">
-      <p class="muted" style="margin-top:0">Tick the details you want to see when you tap a book’s cover. Saved to your Sheet, so it stays the same on every device.</p>
-      <div id="popupFieldsBox"></div>
-      <div class="row" style="flex-wrap:wrap;margin-top:8px"><button class="btn" type="button" onclick="savePopupFields()">Save</button><button class="btn light" type="button" onclick="resetPopupFields()">Reset</button></div>
+      <p class="muted" style="margin-top:0">Choose what shows when you tap a book’s cover. Saved to your Sheet, so it is the same on every device.</p>
+      <button type="button" class="msel" id="pfBtn" onclick="togglePf()" aria-expanded="false"><span id="pfSummary"></span><span>▾</span></button>
+      <div id="pfPanel" hidden>
+        <div id="popupFieldsBox"></div>
+        <div class="row" style="flex-wrap:wrap"><button class="btn" type="button" onclick="savePopupFields()">Save</button><button class="btn light" type="button" onclick="resetPopupFields()">Reset</button></div>
+      </div>
     </div>
     <h3>English titles</h3>
     <div class="panel">
@@ -981,6 +993,15 @@
       <textarea id="qtext" required style="min-height:130px"></textarea>
       <div class="savebar"><button type="submit" class="btn" id="qSave">Save quote</button></div>
     </form>
+  </div>
+</div>
+
+<!-- FINISHED BOOKS LIST -->
+<div class="modal" id="flModal">
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head"><h2 id="flTitle">Books finished</h2><button class="x" type="button" onclick="closeModal('flModal')" aria-label="Close">✕</button></div>
+    <div id="flList"></div>
   </div>
 </div>
 
@@ -1391,21 +1412,41 @@ function peekFacts(b) {
   });
   return out.filter(function (f) { return f[1] !== '' && f[1] != null && f[1] !== 0; });
 }
+var pfDraft = null;
+function pfNames(sel) { return POPUP_FIELDS.filter(function (f) { return sel.indexOf(f[0]) >= 0; }).map(function (f) { return f[1]; }); }
+function pfSummaryText(sel) {
+  var n = pfNames(sel); if (!n.length) return 'Nothing selected';
+  return n.length > 3 ? n.slice(0, 3).join(', ') + ' +' + (n.length - 3) + ' more' : n.join(', ');
+}
 function renderPopupSettings() {
-  var el = $('popupFieldsBox'); if (!el) return;
-  var sel = popupFields();
-  el.innerHTML = POPUP_FIELDS.map(function (pf) {
-    return '<label class="pk-chk"><input type="checkbox" data-pf="' + pf[0] + '"' + (sel.indexOf(pf[0]) >= 0 ? ' checked' : '') + '> ' + pf[1] + '</label>';
+  var box = $('popupFieldsBox'); if (!box) return;
+  var open = !$('pfPanel').hidden, sel = open && pfDraft ? pfDraft : popupFields();
+  $('pfSummary').textContent = pfSummaryText(sel);
+  if (open && box.children.length) return;                       // do not disturb choices being made
+  box.innerHTML = POPUP_FIELDS.map(function (pf) {
+    return '<button type="button" class="chip' + (sel.indexOf(pf[0]) >= 0 ? ' on' : '') + '" data-pf="' + pf[0] + '" onclick="pfToggle(this)">' + pf[1] + '</button>';
   }).join('');
 }
+function togglePf() {
+  var p = $('pfPanel'), open = p.hidden;
+  p.hidden = !open; $('pfBtn').setAttribute('aria-expanded', open ? 'true' : 'false');
+  pfDraft = open ? popupFields().slice() : null;
+  $('popupFieldsBox').innerHTML = ''; renderPopupSettings();
+}
+function pfToggle(btn) {
+  var k = btn.dataset.pf, i = pfDraft.indexOf(k);
+  if (i >= 0) pfDraft.splice(i, 1); else pfDraft.push(k);
+  btn.classList.toggle('on', i < 0); $('pfSummary').textContent = pfSummaryText(pfDraft);
+}
 function savePopupFields() {
-  var sel = [].slice.call(document.querySelectorAll('#popupFieldsBox input:checked')).map(function (x) { return x.dataset.pf; });
+  var sel = pfDraft ? pfDraft.slice() : popupFields();
   if (!data.ui) data.ui = {}; data.ui.popupFields = sel;
   try { localStorage.setItem('rb_popupFields', JSON.stringify(sel)); } catch (e) {}
   var ui = {}; Object.keys(data.ui).forEach(function (k) { if (k !== 'tableManual') ui[k] = data.ui[k]; });
-  gs('saveUiSettings', ui).then(function () { toast('Popup fields saved ✓'); }).catch(function (err) { toast(errMsg(err), true); });
+  gs('saveUiSettings', ui).then(function () { toast('Popup fields saved ✓'); $('pfPanel').hidden = true; $('pfBtn').setAttribute('aria-expanded', 'false'); pfDraft = null; renderPopupSettings(); })
+    .catch(function (err) { toast(errMsg(err), true); });
 }
-function resetPopupFields() { if (!data.ui) data.ui = {}; data.ui.popupFields = POPUP_DEFAULT.slice(); renderPopupSettings(); savePopupFields(); }
+function resetPopupFields() { pfDraft = POPUP_DEFAULT.slice(); $('popupFieldsBox').innerHTML = ''; renderPopupSettings(); savePopupFields(); }
 
 /* ===== reading targets (week / month / year) ===== */
 function targetCfg() {
@@ -1501,6 +1542,7 @@ function closePeek(quick) {
     pk.classList.remove('show', 'on', 'open'); pk.setAttribute('aria-hidden', 'true');
     bk.style.transition = 'none'; bk.style.transform = ''; void bk.offsetWidth; bk.style.transition = '';
     document.querySelectorAll('.bkbook').forEach(function (e) { e.style.visibility = ''; });
+    if (el) el.style.visibility = '';
     if (!document.querySelector('.modal.show')) document.body.classList.remove('locked');
     peekId = null; peekEl = null; peekBusy = false;
   }
@@ -2517,6 +2559,7 @@ var THEMES = {
   cream:  { bg: ['#f8f3e8', '#efe4cc'], ink: '#23332d', sub: '#6d776f', accent: '#c9893b' },
   night:  { bg: ['#141b2d', '#2b3a5e'], ink: '#f2f4fa', sub: '#aab4d0', accent: '#e8c46a' }
 };
+var NUM_FONT = "'Nunito Sans', system-ui, sans-serif";
 var CARD_FONT = "Georgia, 'Noto Serif Tamil', 'Nirmala UI', 'Latha', serif";
 function newCard(key) {
   var c = document.createElement('canvas'); c.width = 1080; c.height = 1350;
@@ -2576,12 +2619,12 @@ function drawRecapCard(r, key) {
   var k = newCard(key), x = k.x, T = k.T;
   x.textAlign = 'center';
   x.fillStyle = T.sub; x.font = '700 40px ' + CARD_FONT; x.fillText('MY ' + r.year + ' IN BOOKS', 540, 170);
-  x.fillStyle = T.accent; x.font = '700 330px ' + CARD_FONT; x.fillText(String(r.count), 540, 480);
-  x.fillStyle = T.ink; x.font = '600 48px ' + CARD_FONT; x.fillText(r.count === 1 ? 'book finished' : 'books finished', 540, 560);
+  x.fillStyle = T.accent; x.font = '700 300px ' + NUM_FONT; x.fillText(String(r.count), 540, 470);
+  x.fillStyle = T.ink; x.font = '600 52px ' + CARD_FONT; x.fillText(r.count === 1 ? 'book finished' : 'books finished', 540, 565);
   var tiles = [[r.pages.toLocaleString(), 'pages'], [String(r.days), 'days read'], [String(r.best), 'best streak']];
   tiles.forEach(function (t, i) {
     var cx = 180 + i * 360;
-    x.fillStyle = T.ink; x.font = '700 64px ' + CARD_FONT; x.fillText(t[0], cx, 700);
+    x.fillStyle = T.ink; x.font = '700 62px ' + NUM_FONT; x.fillText(t[0], cx, 705);
     x.fillStyle = T.sub; x.font = '600 28px ' + CARD_FONT; x.fillText(t[1], cx, 745);
   });
   x.fillStyle = T.accent; x.fillRect(480, 800, 120, 4);
@@ -2590,11 +2633,11 @@ function drawRecapCard(r, key) {
   if (r.top) rows.push(['Top rated', r.top.title]);
   if (r.fav) rows.push(['Favourite genre', r.fav]);
   if (r.bestMonth) rows.push(['Busiest month', r.bestMonth]);
-  var y = 880;
+  var y = 862, step = rows.length > 3 ? 94 : 112;
   rows.forEach(function (row) {
     x.fillStyle = T.sub; x.font = '600 26px ' + CARD_FONT; x.fillText(row[0].toUpperCase(), 540, y);
-    x.fillStyle = T.ink; x.font = '700 38px ' + CARD_FONT; x.fillText(fitLine(x, row[1], 880), 540, y + 46);
-    y += 112;
+    x.fillStyle = T.ink; x.font = '700 38px ' + CARD_FONT; x.fillText(fitLine(x, row[1], 880), 540, y + 44);
+    y += step;
   });
   footer(k);
   return k.c;
@@ -2602,6 +2645,7 @@ function drawRecapCard(r, key) {
 function showShare(drawFn, caption) {
   shareDraw = drawFn; shareTheme = 'forest'; shareCaption = caption || '#RahDasReads';
   openModal('shareModal'); renderShare();
+  if (document.fonts && document.fonts.load) document.fonts.load("700 100px 'Nunito Sans'").then(function () { renderShare(); }, function () {});
 }
 function renderShare() {
   document.querySelectorAll('#shareThemes .chip').forEach(function (b) { b.classList.toggle('on', b.dataset.theme === shareTheme); });
@@ -2809,11 +2853,33 @@ function recapFor(year) {
   var fav = Object.keys(gc).sort(function (a, b) { return gc[b] - gc[a]; })[0] || '';
   return {
     year: year, count: done.length, pages: pages, days: days, best: streaks(my).best,
+    bestYm: bestM,
     bestMonth: bestM ? monthName(+bestM.slice(0, 4), +bestM.slice(5, 7), false) + ' (' + bm + ')' : '',
     longest: longest, top: top, fav: fav,
     avg: rated.length ? (rated.reduce(function (s, b) { return s + ratingNum(b); }, 0) / rated.length).toFixed(1) + '/5' : '–'
   };
 }
+
+/* ===== list of finished books (tap a stat on the Insights screen) ===== */
+function openFinished(kind) {
+  var ys = String(recapYear), r = lastRecap || recapFor(recapYear);
+  var done = data.books.filter(function (b) { return b.status === 'Completed' && String(b.completedOn || '').indexOf(ys) === 0; });
+  var title = ys + ' – books finished', sub = '';
+  if (kind === 'pages') { done.sort(function (a, b) { return (Number(b.totalPages) || 0) - (Number(a.totalPages) || 0); }); title = ys + ' – by pages'; }
+  else if (kind === 'rating') { done.sort(function (a, b) { return ratingNum(b) - ratingNum(a); }); title = ys + ' – by rating'; }
+  else if (kind === 'month' && r.bestYm) { done = done.filter(function (b) { return String(b.completedOn).indexOf(r.bestYm) === 0; }); title = String(r.bestMonth).replace(/\s*\(\d+\)$/, '') + ' – books finished'; }
+  else if (kind === 'genre' && r.fav) { done = done.filter(function (b) { return String(b.genre || '').trim() === r.fav; }); title = r.fav + ' – ' + ys; }
+  else done.sort(function (a, b) { return String(b.completedOn).localeCompare(String(a.completedOn)); });
+  $('flTitle').textContent = title;
+  $('flList').innerHTML = done.map(function (b) {
+    var rn = ratingNum(b);
+    return '<button type="button" class="fl-row" onclick="flOpen(\'' + esc(b.id) + '\',this)">' + cover(b, 'nobar') +
+      '<span class="fl-t"><b>' + esc(b.title) + '</b><i>' + esc(b.author || b.englishTitle || '') + '</i></span>' +
+      '<span class="fl-m">' + esc(String(b.completedOn || '').slice(0, 10)) + '<br>' + (Number(b.totalPages) ? b.totalPages + ' pages' : '') + (rn ? '<br>' + starsHTML(rn) : '') + '</span></button>';
+  }).join('') || '<div class="empty">No books to show.</div>';
+  openModal('flModal');
+}
+function flOpen(id, row) { peekBook(id, row.querySelector('.cover') || row); }   // the list stays open underneath, so closing the book brings you back to it
 function renderInsights() {
   if (!loaded) return;
   var cy = +today().slice(0, 4), years = {}; years[cy] = 1;
@@ -2828,17 +2894,17 @@ function renderInsights() {
     $('recap').innerHTML = '<div class="panel empty"><b>🗓</b>No books marked Completed with a finish date in ' + recapYear + ' yet.</div>';
   } else {
     var hl = '';
-    if (r.longest) hl += '<div class="hl"><span>Longest book</span><span>' + esc(r.longest.title) + ' · ' + r.longest.totalPages + ' pages</span></div>';
-    if (r.top) hl += '<div class="hl"><span>Top rated</span><span>' + esc(r.top.title) + ' ' + starsHTML(ratingNum(r.top)) + '</span></div>';
-    if (r.fav) hl += '<div class="hl"><span>Favourite genre</span><span>' + esc(r.fav) + '</span></div>';
-    if (r.bestMonth) hl += '<div class="hl"><span>Busiest month</span><span>' + esc(r.bestMonth) + '</span></div>';
+    if (r.longest) hl += '<div class="hl tap" onclick="peekBook(\'' + esc(r.longest.id) + '\',this)"><span>Longest book</span><span>' + esc(r.longest.title) + ' · ' + r.longest.totalPages + ' pages</span></div>';
+    if (r.top) hl += '<div class="hl tap" onclick="peekBook(\'' + esc(r.top.id) + '\',this)"><span>Top rated</span><span>' + esc(r.top.title) + ' ' + starsHTML(ratingNum(r.top)) + '</span></div>';
+    if (r.fav) hl += '<div class="hl tap" onclick="openFinished(\'genre\')"><span>Favourite genre</span><span>' + esc(r.fav) + '</span></div>';
+    if (r.bestMonth) hl += '<div class="hl tap" onclick="openFinished(\'month\')"><span>Busiest month</span><span>' + esc(r.bestMonth) + '</span></div>';
     $('recap').innerHTML =
-      '<div class="panel recap"><div class="ry">' + r.year + ' IN BOOKS</div><div class="rb">' + r.count + '</div><div>' + (r.count === 1 ? 'book finished' : 'books finished') + '</div></div>' +
+      '<div class="panel recap tap" role="button" tabindex="0" onclick="openFinished(\'all\')"><div class="ry">' + r.year + ' IN BOOKS</div><div class="rb">' + r.count + '</div><div>' + (r.count === 1 ? 'book finished' : 'books finished') + '</div><div class="rhint">Tap to see the books ›</div></div>' +
       '<div class="stats" style="margin-top:10px">' +
-      '<div class="stat"><b>' + r.pages.toLocaleString() + '</b><span>Pages in finished books</span></div>' +
-      '<div class="stat"><b>' + r.days + '</b><span>Days read (logged)</span></div>' +
-      '<div class="stat"><b>' + r.best + '</b><span>Best streak (logged)</span></div>' +
-      '<div class="stat"><b>' + r.avg + '</b><span>Average rating</span></div></div>' +
+      '<div class="stat tap" onclick="openFinished(\'pages\')"><b>' + r.pages.toLocaleString() + '</b><span>Pages in finished books</span></div>' +
+      '<div class="stat tap" onclick="setPTab(\'overview\');window.scrollTo(0,0)"><b>' + r.days + '</b><span>Days read (logged)</span></div>' +
+      '<div class="stat tap" onclick="setPTab(\'overview\');window.scrollTo(0,0)"><b>' + r.best + '</b><span>Best streak (logged)</span></div>' +
+      '<div class="stat tap" onclick="openFinished(\'rating\')"><b>' + r.avg + '</b><span>Average rating</span></div></div>' +
       (hl ? '<div class="panel" style="margin-top:10px">' + hl + '</div>' : '') +
       '<button class="btn" style="margin-top:10px;width:100%" onclick="shareRecap()">Share my ' + r.year + ' recap</button>';
   }
