@@ -480,7 +480,10 @@
     .pk-quick select,.pk-quick input { width:100%; padding:9px 8px; min-width:0 } .pk-quick input { text-align:center } .pk-quick .btn { flex-basis:100%; padding:11px }
     .logrow { flex-wrap:wrap } .logrow span { flex-basis:100%; font-weight:700 }
     .logrow input[type=date] { width:auto; flex:1; min-width:130px }
-  </style>
+  .ql-row2{display:flex;align-items:center;gap:6px;margin-bottom:6px}.ql-row2 .ql-row{flex:1;margin:0;min-width:0}.ql-x{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--line,#d9d2c0);background:transparent;color:inherit;font-size:16px;cursor:pointer}.ql-x:disabled{opacity:.4}
+.pk-chk{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:15px}.pk-chk input{width:20px;height:20px}
+.delx{border:0;background:transparent;color:#b3261e;font-size:13px;font-weight:700;cursor:pointer;padding:6px 4px}
+</style>
 </head>
 
 <body data-view="home">
@@ -677,6 +680,12 @@
         <button class="btn light" onclick="showConnect()">Change connection</button>
         <button class="btn danger" onclick="disconnectApp()">Disconnect</button>
       </div>
+    </div>
+    <h3>Book popup fields</h3>
+    <div class="panel">
+      <p class="muted" style="margin-top:0">Tick the details you want to see when you tap a book’s cover. Saved to your Sheet, so it stays the same on every device.</p>
+      <div id="popupFieldsBox"></div>
+      <div class="row" style="flex-wrap:wrap;margin-top:8px"><button class="btn" type="button" onclick="savePopupFields()">Save</button><button class="btn light" type="button" onclick="resetPopupFields()">Reset</button></div>
     </div>
     <h3>English titles</h3>
     <div class="panel">
@@ -1261,18 +1270,7 @@ function peekHTML(b) {
   var tot = Number(b.totalPages) || 0, read = Number(b.pagesRead) || 0;
   if (tot && read) h += '<div class="pk-in"' + ix() + '><div class="pk-bar"><i style="width:' + Math.min(100, Math.round(read / tot * 100)) + '%"></i></div>' +
     '<div class="meta">' + read + ' of ' + tot + ' pages read · ' + pct(b) + '%</div></div>';
-  var dash = function (v) { return v === '' || v == null || v === 0 ? '—' : v; };
-  var facts = [['Category', dash(b.category)], ['Genre', dash(b.genre)], ['Pages', dash(tot)], ['Origin', dash(b.origin)], ['Language', b.language]];
-  if (isTrans(b)) {
-    facts.push(['Translation', 'Yes']);
-    facts.push(['Original language', dash(b.originalLanguage)]);
-    facts.push(['Translator', b.translator ? b.translator + (b.translatorEnglish && b.translatorEnglish !== b.translator ? ' · ' + b.translatorEnglish : '') : '—']);
-  }
-  facts.push(['Started', b.startedOn], ['Finished', b.completedOn]);
-  if (b.kind === 'pdf') facts.push(['Source', b.source]); else facts.push(['Bought from', b.purchasedFrom]);
-  var nq = String(b.quotes || '').split(/\n\s*\n/).filter(function (x) { return x.trim(); }).length;
-  if (nq) facts.push(['Quotes', nq]);
-  facts = facts.filter(function (f) { return f[1] !== '' && f[1] != null && f[1] !== 0; });
+  var facts = peekFacts(b);
   if (facts.length) h += '<dl class="pk-in pk-grid"' + ix() + '>' + facts.map(function (f) { return '<dt>' + f[0] + '</dt><dd>' + esc(String(f[1])) + '</dd>'; }).join('') + '</dl>';
   h += '<div class="pk-in pk-actions"' + ix() + '><button type="button" class="btn sm" onclick="peekEdit()">✎ Edit</button>';
   if (b.status !== 'Completed') h += '<button type="button" class="btn light sm" onclick="peekLog()">＋ Log pages</button>';
@@ -1280,17 +1278,73 @@ function peekHTML(b) {
   h += '</div><div class="pk-in"' + ix() + '><div class="pk-quick">' +
     '<label class="pk-f">Status<select id="pkSt">' + STATUSES.filter(function (x) { return x !== 'Not set'; }).map(function (x) { return '<option value="' + x + '"' + (x === b.status ? ' selected' : '') + '>' + stLabel(x) + '</option>'; }).join('') + '</select></label>' +
     '<label class="pk-f">Pages read' + (Number(b.totalPages) ? ' / ' + b.totalPages : '') + '<input id="pkPg" type="number" min="0" inputmode="numeric" value="' + (Number(b.pagesRead) || 0) + '"></label>' +
+    '<label class="pk-f">On the home table<select id="pkTb"><option value=""' + (tableModeOf(b) === '' ? ' selected' : '') + '>No – in the cupboard</option><option value="now"' + (tableModeOf(b) === 'now' ? ' selected' : '') + '>Reading now</option><option value="next"' + (tableModeOf(b) === 'next' ? ' selected' : '') + '>Up next</option></select></label>' +
     '<button type="button" class="btn sm" onclick="peekQuickSave(this)">Update</button></div>' +
     '<div class="meta" style="margin-top:6px">Quick update: change the status or type the page you reached, then tap Update. Pages you add are written to today’s reading log.</div></div>';
   return h + '</div>';
 }
+
+/* ===== book popup fields (Settings → Book popup fields) ===== */
+var POPUP_FIELDS = [
+  ['category', 'Category'], ['genre', 'Genre'], ['pages', 'Pages'], ['origin', 'Origin'], ['language', 'Language'],
+  ['translation', 'Translation details'], ['started', 'Started on'], ['finished', 'Finished on'], ['source', 'Bought from / Source'],
+  ['price', 'Price'], ['quotes', 'Number of quotes'], ['notes', 'Notes']
+];
+var POPUP_DEFAULT = ['category', 'pages', 'translation', 'started', 'finished', 'source', 'quotes'];
+function popupFields() {
+  var f = data && data.ui && data.ui.popupFields;
+  if (!f) { try { f = JSON.parse(localStorage.getItem('rb_popupFields') || 'null'); } catch (e) { f = null; } }
+  return Array.isArray(f) ? f : POPUP_DEFAULT;
+}
+function peekFacts(b) {
+  var sel = popupFields(), tot = Number(b.totalPages) || 0, out = [];
+  var dash = function (v) { return v === '' || v == null || v === 0 ? '—' : v; };
+  POPUP_FIELDS.forEach(function (pf) {
+    var k = pf[0]; if (sel.indexOf(k) < 0) return;
+    if (k === 'category') out.push(['Category', b.category]);
+    else if (k === 'genre') out.push(['Genre', b.genre]);
+    else if (k === 'pages') out.push(['Pages', tot]);
+    else if (k === 'origin') out.push(['Origin', b.origin]);
+    else if (k === 'language') out.push(['Language', b.language]);
+    else if (k === 'translation' && isTrans(b)) {
+      out.push(['Translation', 'Yes'], ['Original language', dash(b.originalLanguage)],
+        ['Translator', b.translator ? b.translator + (b.translatorEnglish && b.translatorEnglish !== b.translator ? ' · ' + b.translatorEnglish : '') : '—']);
+    }
+    else if (k === 'started') out.push(['Started', b.startedOn]);
+    else if (k === 'finished') out.push(['Finished', b.completedOn]);
+    else if (k === 'source') out.push(b.kind === 'pdf' ? ['Source', b.source] : ['Bought from', b.purchasedFrom]);
+    else if (k === 'price') out.push(['Price', b.price]);
+    else if (k === 'quotes') { var nq = String(b.quotes || '').split(/\n\s*\n/).filter(function (x) { return x.trim(); }).length; if (nq) out.push(['Quotes', nq]); }
+    else if (k === 'notes') out.push(['Notes', b.notes]);
+  });
+  return out.filter(function (f) { return f[1] !== '' && f[1] != null && f[1] !== 0; });
+}
+function renderPopupSettings() {
+  var el = $('popupFieldsBox'); if (!el) return;
+  var sel = popupFields();
+  el.innerHTML = POPUP_FIELDS.map(function (pf) {
+    return '<label class="pk-chk"><input type="checkbox" data-pf="' + pf[0] + '"' + (sel.indexOf(pf[0]) >= 0 ? ' checked' : '') + '> ' + pf[1] + '</label>';
+  }).join('');
+}
+function savePopupFields() {
+  var sel = [].slice.call(document.querySelectorAll('#popupFieldsBox input:checked')).map(function (x) { return x.dataset.pf; });
+  if (!data.ui) data.ui = {}; data.ui.popupFields = sel;
+  try { localStorage.setItem('rb_popupFields', JSON.stringify(sel)); } catch (e) {}
+  var ui = {}; Object.keys(data.ui).forEach(function (k) { if (k !== 'tableManual') ui[k] = data.ui[k]; });
+  gs('saveUiSettings', ui).then(function () { toast('Popup fields saved ✓'); }).catch(function (err) { toast(errMsg(err), true); });
+}
+function resetPopupFields() { if (!data.ui) data.ui = {}; data.ui.popupFields = POPUP_DEFAULT.slice(); renderPopupSettings(); savePopupFields(); }
 function peekQuickSave(btn) {
   var b = data.books.find(function (x) { return String(x.id) === String(peekId); }); if (!b) return;
   var pl = quickPayload(b, $('pkSt').value, Math.max(0, Number($('pkPg').value) || 0), Number(b.totalPages) || 0);
+  var tbNow = tableModeOf(b), tbSel = $('pkTb').value, term = TERMINAL.indexOf(pl.status) >= 0;
+  var ids = (!term && tbSel !== tbNow) ? tableIdsWith(b.id, tbSel) : null;
+  if (ids && tbSel === 'now' && !isReadingSt(pl)) pl.status = 'Currently Reading';
+  if (ids && tbSel === 'next' && (!pl.status || pl.status === 'Not set')) pl.status = 'Not Started';
   busy(btn, true, '…');
-  gs('saveBook', pl).then(function () {
+  gs('saveBook', pl).then(function () { return ids ? saveTableIds(ids) : null; }).then(function () {
     busy(btn, false); closePeek(true);
-    toast(['Completed', 'DNF', 'On Hold'].indexOf(pl.status) >= 0 ? 'Updated – moved off the table ✓' : 'Updated ✓'); refresh(true);
+    toast(term ? 'Updated – moved off the table ✓' : 'Updated ✓'); refresh(true);
   }).catch(function (err) { busy(btn, false); toast(errMsg(err), true); });
 }
 function peekBook(id, el) {
@@ -1381,6 +1435,7 @@ function render() {
   $('hGoal').textContent = doneYear.length + '/' + data.goal;
 
   renderHomeTables();
+  renderPopupSettings();
 
   renderChips();
   renderLibrary();
@@ -1433,7 +1488,8 @@ function renderLibrary() {
 function renderJournal() {
   $('entries').innerHTML = data.journal.slice().reverse().map(function (x) {
     return '<div class="panel note"><div class="row between"><b>' + esc(x.bookTitle || 'Reading note') +
-      '</b><span class="meta">' + esc(x.date) + '</span></div><div class="quote">' + esc(x.text) + '</div></div>';
+      '</b><span class="meta">' + esc(x.date) + '</span></div><div class="quote">' + esc(x.text) + '</div>' +
+      '<div style="text-align:right"><button type="button" class="delx" data-jdel="' + data.journal.indexOf(x) + '">🗑 Delete</button></div></div>';
   }).join('') || '<div class="empty"><b>✎</b>Your notes will appear here.</div>';
   $('jbook').innerHTML = '<option value="">General note</option>' + data.books.map(function (x) {
     return '<option value="' + esc(x.id) + '">' + esc(x.title) + '</option>';
@@ -1518,6 +1574,8 @@ document.addEventListener('click', function (e) {
   var fp = t.closest('#fmtPick button'); if (fp) return setFormat(fp.dataset.fmt, false);
   var en = t.closest('[data-eng]'); if (en) return pickEnglish(Number(en.dataset.eng), en.dataset.to);
   var lc = t.closest('[data-line]'); if (lc) return toggleLine(Number(lc.dataset.line));
+  var jd = t.closest('[data-jdel]'); if (jd) return delNote(Number(jd.dataset.jdel), jd);
+  var qd = t.closest('[data-qdel]'); if (qd) return delQuote(Number(qd.dataset.qdel), qd);
   var qs = t.closest('[data-qshare]'); if (qs) return shareQuote(Number(qs.dataset.qshare));
   var qc = t.closest('[data-qcopy]'); if (qc) return copyQuote(Number(qc.dataset.qcopy));
   var th = t.closest('[data-theme]'); if (th) { shareTheme = th.dataset.theme; renderShare(); return; }
@@ -1620,11 +1678,11 @@ function saveBook(e) {
   b.isTranslation = $('isTranslation').checked ? 'Yes' : 'No';
   if (!$('isTranslation').checked) { b.originalLanguage = ''; b.translator = ''; b.translatorEnglish = ''; }
   b.kind = $('kind').value;
-  var qsel = $('queueSel').value, exId = editingBook ? editingBook.id : '';
-  if (qsel === '') b.queue = '';
-  else if (editingBook && qsel === queueInit) b.queue = editingBook.queue;
-  else if (qsel === 'now') { b.queue = minQ(exId) - 1; if (!isReadingSt(b)) b.status = 'Currently Reading'; }
-  else { b.queue = maxQ(exId) + 1; if (!b.status || b.status === 'Not set') b.status = 'Not Started'; }
+  var qsel = $('queueSel').value, tableChanged = qsel !== queueInit;
+  if (editingBook) b.queue = editingBook.queue; else b.queue = '';
+  if (tableChanged && qsel === 'now' && !isReadingSt(b)) b.status = 'Currently Reading';
+  if (tableChanged && qsel === 'next' && (!b.status || b.status === 'Not set')) b.status = 'Not Started';
+  if (TERMINAL.indexOf(b.status) >= 0) tableChanged = false;   // finished / dropped books leave the table by themselves
   b.rating = $('rating').value;
   b.totalPages = b.totalPages ? Number(b.totalPages) : '';
   b.pagesRead = Number(b.pagesRead || 0);
@@ -1645,6 +1703,8 @@ function saveBook(e) {
   var bookId;
   gs('saveBook', b).then(function (r) {
     bookId = r.id;
+    if (tableChanged) return saveTableIds(tableIdsWith(bookId, qsel));
+  }).then(function () {
     if (pendingCover) { btn.innerHTML = '<span class="spin"></span> Uploading photo…'; return gs('uploadBookCover', { bookId: bookId, kind: b.kind, dataUrl: pendingCover }); }
     if (removeCoverFlag && hadCover) return gs('removeBookCover', bookId);
   }).then(function () {
@@ -1689,8 +1749,9 @@ function onTable(b) { return b.queue !== '' && b.queue != null && !isNaN(Number(
 function isReadingSt(b) { return ['Currently Reading', 'Partially'].indexOf(b.status) >= 0; }
 function tableBooks() {
   var q = data.books.filter(onTable).sort(function (a, b) { return Number(a.queue) - Number(b.queue); });
-  roomState.auto = !q.length;
-  if (q.length) return q;
+  var manual = !!(data.ui && data.ui.tableManual);
+  roomState.auto = !q.length && !manual;
+  if (q.length || manual) return q;
   // nobody has been placed on the table yet: show the books being read plus the first 3 planned ones
   return data.books.filter(isReadingSt).slice(0, 2).concat(data.books.filter(isPlanned).slice(0, 3));
 }
@@ -1867,13 +1928,36 @@ function renderRoom() {
   var hintEl = document.querySelector('.room-hint'); if (hintEl) hintEl.textContent = roomState.auto ? 'Showing your reading list · pick books in Edit → On the home table' : 'Tap a book on the table to open it';
   $('roomItems').innerHTML = html;
 }
-function openQueueList() {
+
+var TERMINAL = ['Completed', 'DNF', 'On Hold'];
+/* ids for the table after placing book `id` as 'now' (front), 'next' (back) or '' (off the table) */
+function tableIdsWith(id, mode) {
+  var rest = tableBooks().map(function (x) { return String(x.id); }).filter(function (x) { return x !== String(id); });
+  if (mode === 'now') return [String(id)].concat(rest);
+  if (mode === 'next') return rest.concat([String(id)]);
+  return rest;
+}
+function tableModeOf(b) { return tableBooks().indexOf(b) >= 0 ? (isReadingSt(b) ? 'now' : 'next') : ''; }
+function saveTableIds(ids) {
+  return gs('setTableOrder', ids).then(function () { if (!data.ui) data.ui = {}; data.ui.tableManual = true; });
+}
+function removeFromTable(id, btn) {
+  var ids = tableIdsWith(id, '');
+  if (btn) btn.disabled = true;
+  saveTableIds(ids).then(function () {
+    toast('Removed from the table ✓ (status kept)');
+    return gs('getLibraryData');
+  }).then(function (r) { data = r; render(); openQueueList(true); })
+    .catch(function (err) { if (btn) btn.disabled = false; toast(errMsg(err), true); });
+}
+function openQueueList(keep) {
   var tb = tableBooks();
   $('qlList').innerHTML = tb.map(function (b) {
-    return '<button type="button" class="ql-row" onclick="closeModal(\'qlModal\');openQuick(\'' + esc(b.id) + '\')"><span><b>' + esc(b.title) + '</b><i>' + esc(b.englishTitle || b.author || '') + '</i></span>' +
-      '<span class="pill" data-s="' + slug(status(b)) + '">' + esc(status(b)) + '</span></button>';
-  }).join('') || '<div class="empty">Nothing on the table yet.</div>';
-  openModal('qlModal');
+    return '<div class="ql-row2"><button type="button" class="ql-row" onclick="closeModal(\'qlModal\');openQuick(\'' + esc(b.id) + '\')"><span><b>' + esc(b.title) + '</b><i>' + esc(b.englishTitle || b.author || '') + '</i></span>' +
+      '<span class="pill" data-s="' + slug(status(b)) + '">' + esc(status(b)) + '</span></button>' +
+      '<button type="button" class="ql-x" aria-label="Remove from table" title="Remove from table" onclick="removeFromTable(\'' + esc(b.id) + '\',this)">✕</button></div>';
+  }).join('') + (tb.length ? '<div class="meta" style="padding:8px 4px">✕ takes a book off the table. Its status stays the same.</div>' : '') || '<div class="empty">Nothing on the table yet.</div>';
+  if (!keep) openModal('qlModal');
 }
 window.addEventListener('resize', function () { var h = $('home'); if (h && h.classList.contains('active') && loaded) renderRoom(); });
 
@@ -2236,7 +2320,7 @@ function renderQuotes() {
     return '<div class="panel qcard"><div class="quote">“' + esc(x.text) + '”</div>' +
       '<div class="row between" style="margin-top:10px;align-items:flex-end"><div class="meta" style="min-width:0"><b>' + esc(x.title) + '</b>' +
       (x.author ? ' · ' + esc(x.author) : '') + '</div><div class="row" style="gap:6px;flex:none">' +
-      '<button class="btn light sm" data-qcopy="' + i + '">Copy</button><button class="btn sm" data-qshare="' + i + '">Share</button></div></div></div>';
+      '<button class="btn light sm" data-qcopy="' + i + '">Copy</button><button class="btn sm" data-qshare="' + i + '">Share</button><button class="delx" data-qdel="' + i + '" aria-label="Delete quote">🗑</button></div></div></div>';
   }).join('') || '<div class="empty"><b>❝</b>' + (all.length ? 'No quotes match your search.' : 'No quotes yet. Tap ＋ Quote to save one.') + '</div>';
 }
 function fallbackCopy(t) {
@@ -2244,6 +2328,20 @@ function fallbackCopy(t) {
   a.value = t; a.style.position = 'fixed'; a.style.opacity = '0'; document.body.appendChild(a); a.select();
   try { document.execCommand('copy'); toast('Copied ✓'); } catch (e) { toast('Could not copy', true); }
   a.remove();
+}
+function delNote(i, btn) {
+  var x = data.journal[i]; if (!x) return;
+  if (!confirm('Delete this note?')) return;
+  btn.disabled = true;
+  gs('deleteJournalEntry', { date: x.date, bookTitle: x.bookTitle, text: x.text }).then(function () { toast('Note deleted ✓'); refresh(true); })
+    .catch(function (err) { btn.disabled = false; toast(errMsg(err), true); });
+}
+function delQuote(i, btn) {
+  var x = quoteList[i]; if (!x) return;
+  if (!confirm('Delete this quote?')) return;
+  btn.disabled = true;
+  gs('deleteQuote', { bookId: x.bookId, text: x.text }).then(function () { toast('Quote deleted ✓'); refresh(true); })
+    .catch(function (err) { btn.disabled = false; toast(errMsg(err), true); });
 }
 function copyQuote(i) {
   var x = quoteList[i]; if (!x) return;
