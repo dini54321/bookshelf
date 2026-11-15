@@ -677,12 +677,15 @@
       <div class="field"><label>Phone notification (free app “ntfy”)</label>
         <div class="row"><input id="remNtfy" placeholder="your private topic name" autocapitalize="none" autocomplete="off" style="flex:1"><button class="btn light sm" type="button" onclick="genTopic()">Make one</button></div>
         <div class="meta">Install the free <b>ntfy</b> app (iPhone or Android), tap +, subscribe to the same topic name. Keep the name secret – anyone who knows it can read your reminders.</div></div>
+      <details style="margin-bottom:10px"><summary class="muted">Phone notification not arriving (error 429)?</summary>
+        <div class="meta" style="margin:6px 0">The free ntfy.sh server sometimes refuses Google’s servers. Fix: make a free account at ntfy.sh (in a browser), open Account → Access tokens → Create token, and paste the token (starts with tk_) here. Your topic stays the same.</div>
+        <input id="remNtfyTok" placeholder="ntfy access token (tk_…)" autocomplete="off"></details>
       <details style="margin-bottom:10px"><summary class="muted">WhatsApp (optional, uses the free CallMeBot service)</summary>
         <div class="meta" style="margin:6px 0">One-time setup: save +34 644 51 95 23 in your contacts, send it the WhatsApp message “I allow callmebot to send me messages”, and it replies with your key. Enter your number with country code and the key here. CallMeBot is a third-party service and can change or stop.</div>
         <input id="remWaPhone" placeholder="Phone, e.g. +447700900123" inputmode="tel" style="margin-bottom:6px">
         <input id="remWaKey" placeholder="CallMeBot key (leave empty to keep the saved one)" autocomplete="off"></details>
       <div class="row" style="flex-wrap:wrap">
-        <select id="remHour" class="mini"></select>
+        <input id="remHour" type="time" step="60" class="mini" aria-label="Reminder time">
         <button class="btn" id="remBtn" onclick="saveReminder(true)">Save reminder</button>
         <button class="btn light" id="remOff" onclick="saveReminder(false)" style="display:none">Turn off</button>
         <button class="btn light" id="remTest" onclick="testReminder(this)">Send test</button>
@@ -3141,15 +3144,15 @@ function saveLog(e) {
 }
 
 /* ================= daily reminder ================= */
-var remState = { on: false, hour: 20 };
-function fmtHour(h) { return (h % 12 || 12) + ':00 ' + (h < 12 ? 'AM' : 'PM'); }
+var remState = { on: false, hour: 20, time: '20:00' };
+function fmtTime(s) { var p = String(s || '20:00').split(':'), h = Number(p[0]) || 0; return (h % 12 || 12) + ':' + (p[1] || '00') + ' ' + (h < 12 ? 'AM' : 'PM'); }
 function genTopic() {
   var a = new Uint8Array(9); (window.crypto || window.msCrypto).getRandomValues(a);
   $('remNtfy').value = 'rahdas-' + [].map.call(a, function (x) { return (x % 36).toString(36); }).join('');
 }
 function remPayload(on) {
-  return { on: on, hour: Number($('remHour').value), email: $('remEmail').checked, ntfyTopic: $('remNtfy').value,
-    waPhone: $('remWaPhone').value, waKey: $('remWaKey').value };
+  return { on: on, time: $('remHour').value || '20:00', email: $('remEmail').checked, ntfyTopic: $('remNtfy').value,
+    waPhone: $('remWaPhone').value, waKey: $('remWaKey').value, ntfyToken: $('remNtfyTok').value };
 }
 function testReminder(btn) {
   busy(btn, true, 'Sending…');
@@ -3157,22 +3160,19 @@ function testReminder(btn) {
     .then(function (r) { busy(btn, false); toast(r.result); }).catch(function (err) { busy(btn, false); toast(errMsg(err), true); });
 }
 function paintReminder() {
-  $('remHour').value = remState.hour;
+  $('remHour').value = remState.time || (('0' + remState.hour).slice(-2) + ':00');
   $('remEmail').checked = remState.email !== false;
   if (document.activeElement !== $('remNtfy')) $('remNtfy').value = remState.ntfyTopic || '';
   if (document.activeElement !== $('remWaPhone')) $('remWaPhone').value = remState.waPhone || '';
+  $('remNtfyTok').placeholder = remState.ntfyTokenSet ? 'Token saved – leave empty to keep it' : 'ntfy access token (tk_…)';
   $('remWaKey').placeholder = remState.waKeySet ? 'Key saved – leave empty to keep it' : 'CallMeBot key';
   $('remOff').style.display = remState.on ? '' : 'none';
   $('remMsg').textContent = remState.on
-    ? 'On — around ' + fmtHour(remState.hour) + ' on days you haven’t logged any reading, sent by: ' +
+    ? 'On — at ' + fmtTime(remState.time || (remState.hour + ':00')) + ' on days you haven’t logged any reading, sent by: ' +
       [remState.email !== false ? 'email' : '', remState.ntfyTopic ? 'phone notification' : '', remState.waPhone && remState.waKeySet ? 'WhatsApp' : ''].filter(Boolean).join(', ') + '.'
     : 'Off';
 }
 function loadReminder() {
-  var sel = $('remHour');
-  if (!sel.options.length) {
-    for (var h = 5; h <= 23; h++) { var o = document.createElement('option'); o.value = h; o.textContent = fmtHour(h); sel.appendChild(o); }
-  }
   gs('getReminder').then(function (r) { remState = r; paintReminder(); })
     .catch(function () { $('remMsg').textContent = 'Reminder settings are unavailable right now.'; });
 }
