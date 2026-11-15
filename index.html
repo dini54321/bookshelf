@@ -441,7 +441,9 @@
     .cup-hit { position:absolute; left:17%; width:66%; top:3.5%; height:54%; background:transparent; border:0; z-index:1 }
     .sign { position:absolute; left:50%; top:4.2%; transform:translateX(-50%); z-index:2; pointer-events:none; padding:3px 12px; border-radius:6px; white-space:nowrap;
       font:700 12px 'Nunito Sans',sans-serif; letter-spacing:.4px; color:#2a1a08; background:linear-gradient(180deg,#e9c870,#b98d2e); box-shadow:0 2px 5px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.5) }
-    #roomItems { position:absolute; inset:0; z-index:3 }
+    #roomItems { position:absolute; inset:0; z-index:3; pointer-events:none }
+    #roomItems .rbk,#roomItems .pile { pointer-events:auto }
+    .room { max-width:560px; margin-left:auto; margin-right:auto }
     .rb-w { position:absolute; transform-origin:50% 100% }
     .rbk { position:absolute; inset:0; border:0; padding:0; background:none; cursor:pointer; filter:drop-shadow(-5px 5px 4px rgba(0,0,0,.55)) }
     .rbk .cv { position:absolute; inset:0; border-radius:2px 5px 5px 2px; overflow:hidden;
@@ -472,8 +474,10 @@
     .room-hint { position:absolute; left:0; right:0; bottom:2.4%; text-align:center; z-index:3; pointer-events:none; color:#f3ead0; font:600 12px 'Nunito Sans',sans-serif; text-shadow:0 1px 3px rgba(0,0,0,.9) }
     .ql-row { display:flex; justify-content:space-between; align-items:center; gap:10px; width:100%; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-bottom:8px }
     .ql-row b { display:block; font:700 17px var(--serif) } .ql-row i { font-style:normal; font-size:12px; color:var(--muted) }
-    .pk-quick { display:flex; gap:6px; align-items:center; margin-top:12px }
-    .pk-quick select,.pk-quick input { width:auto; padding:8px 8px; min-width:0 } .pk-quick input { width:70px; text-align:center }
+    .peek-page { overflow-y:auto; -webkit-overflow-scrolling:touch }
+    .pk-quick { display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end; margin-top:12px }
+    .pk-f { flex:1; min-width:120px; display:flex; flex-direction:column; gap:3px; font-size:11px; font-weight:700; letter-spacing:.4px; text-transform:uppercase; color:var(--muted) }
+    .pk-quick select,.pk-quick input { width:100%; padding:9px 8px; min-width:0 } .pk-quick input { text-align:center } .pk-quick .btn { flex-basis:100%; padding:11px }
     .logrow { flex-wrap:wrap } .logrow span { flex-basis:100%; font-weight:700 }
     .logrow input[type=date] { width:auto; flex:1; min-width:130px }
   </style>
@@ -1089,14 +1093,30 @@ function lsGet(k) { try { return localStorage.getItem(k) || ''; } catch (e) { re
 function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
 function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
 var shownOffline = false;
+var RETRY_OK = { getLibraryData: 1 };
 function apiCall(fn, arg) {
+  return apiOnce(fn, arg).catch(function (e) {
+    var canRetry = RETRY_OK[fn] || (fn === 'saveBook' && arg && arg.id);   // safe to repeat: they do not add duplicates
+    if (canRetry && e && (e.notjson || e.network)) return new Promise(function (r) { setTimeout(r, 1800); }).then(function () { return apiOnce(fn, arg); });
+    throw e;
+  });
+}
+function apiOnce(fn, arg) {
   var url = lsGet('rb_api_url'), key = lsGet('rb_api_key');
   if (!url || !key) { showConnect(); var ne = new Error('Connect the app to your sheet first.'); ne.silent = true; return Promise.reject(ne); }
   return fetch(url, {
     method: 'POST', redirect: 'follow',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },          // a "simple" request: no CORS pre-flight needed
     body: JSON.stringify({ key: key, fn: fn, arg: arg === undefined ? null : arg })
-  }).then(function (r) { return r.json(); }).then(function (j) {
+  }).then(function (r) {
+    return r.text().then(function (t) {
+      var j; try { j = JSON.parse(t); } catch (x) {
+        var m = /<title>([^<]*)/i.exec(t), er = new Error('Google sent back a web page instead of data' + (m ? ' (“' + m[1].trim().slice(0, 70) + '”)' : '') + ' [HTTP ' + r.status + '] while running “' + fn + '”. Try again in a few seconds. If it keeps happening, in Apps Script choose Deploy → Manage deployments → ✏ Edit → New version → Deploy.');
+        er.notjson = true; throw er;
+      }
+      return j;
+    });
+  }).then(function (j) {
     if (!j || !j.ok) {
       var ae = new Error((j && j.error) || 'The request failed.');
       if (j && j.code === 'auth') { showConnect(j.error); ae.silent = true; }   // the connect screen already explains it
@@ -1105,12 +1125,13 @@ function apiCall(fn, arg) {
     shownOffline = false;
     if (fn === 'getLibraryData') { try { lsSet('rb_cache', JSON.stringify(j.result)); } catch (e) {} }
     return j.result;
-  }, function () {                                                    // network failure, or a reply that is not data
+  }, function (e) {                                                   // network failure, or a reply that is not data
     if (fn === 'getLibraryData') {
       var c = lsGet('rb_cache');
       if (c) { if (!shownOffline) { shownOffline = true; toast('Offline — showing your saved shelf'); } return JSON.parse(c); }
     }
-    return diagnose(url).then(function (m) { throw new Error(m); });
+    if (e && e.notjson) throw e;
+    return diagnose(url).then(function (m) { var ne2 = new Error(m); ne2.network = true; throw ne2; });
   });
 }
 /* Works out WHY a request failed, so the message says what to fix. */
@@ -1256,8 +1277,11 @@ function peekHTML(b) {
   h += '<div class="pk-in pk-actions"' + ix() + '><button type="button" class="btn sm" onclick="peekEdit()">✎ Edit</button>';
   if (b.status !== 'Completed') h += '<button type="button" class="btn light sm" onclick="peekLog()">＋ Log pages</button>';
   if (b.kind === 'pdf' && b.fileUrl) h += '<a class="btn light sm" href="' + esc(b.fileUrl) + '" target="_blank" rel="noopener">📄 Open PDF</a>';
-  h += '</div><div class="pk-in pk-quick"' + ix() + '><select id="pkSt">' + STATUSES.filter(function (x) { return x !== 'Not set'; }).map(function (x) { return '<option value="' + x + '"' + (x === b.status ? ' selected' : '') + '>' + stLabel(x) + '</option>'; }).join('') + '</select>' +
-    '<input id="pkPg" type="number" min="0" inputmode="numeric" value="' + (Number(b.pagesRead) || 0) + '" aria-label="Pages read"><button type="button" class="btn sm" onclick="peekQuickSave(this)">Update</button></div>';
+  h += '</div><div class="pk-in"' + ix() + '><div class="pk-quick">' +
+    '<label class="pk-f">Status<select id="pkSt">' + STATUSES.filter(function (x) { return x !== 'Not set'; }).map(function (x) { return '<option value="' + x + '"' + (x === b.status ? ' selected' : '') + '>' + stLabel(x) + '</option>'; }).join('') + '</select></label>' +
+    '<label class="pk-f">Pages read' + (Number(b.totalPages) ? ' / ' + b.totalPages : '') + '<input id="pkPg" type="number" min="0" inputmode="numeric" value="' + (Number(b.pagesRead) || 0) + '"></label>' +
+    '<button type="button" class="btn sm" onclick="peekQuickSave(this)">Update</button></div>' +
+    '<div class="meta" style="margin-top:6px">Quick update: change the status or type the page you reached, then tap Update. Pages you add are written to today’s reading log.</div></div>';
   return h + '</div>';
 }
 function peekQuickSave(btn) {
@@ -1551,7 +1575,7 @@ function editBook(id) {
   setRating(ratingNum(b));
   setFormat(b.kind === 'pdf' ? 'pdf' : 'paper', true);
   $('modalTitle').textContent = 'Edit book';
-  queueInit = onTable(b) ? (isReadingSt(b) ? 'now' : 'next') : ''; $('queueSel').value = queueInit;
+  queueInit = tableBooks().indexOf(b) >= 0 ? (isReadingSt(b) ? 'now' : 'next') : ''; $('queueSel').value = queueInit;
   $('delBtn').style.display = '';
   paintCover();
   openModal('bookModal');
@@ -1663,7 +1687,13 @@ var roomState = { ids: null, W: 0, drawn: false };
 function stLabel(x) { return x === 'DNF' ? 'DNF – not interested' : x; }
 function onTable(b) { return b.queue !== '' && b.queue != null && !isNaN(Number(b.queue)) && ['Completed', 'DNF', 'On Hold'].indexOf(b.status) < 0; }
 function isReadingSt(b) { return ['Currently Reading', 'Partially'].indexOf(b.status) >= 0; }
-function tableBooks() { return data.books.filter(onTable).sort(function (a, b) { return Number(a.queue) - Number(b.queue); }); }
+function tableBooks() {
+  var q = data.books.filter(onTable).sort(function (a, b) { return Number(a.queue) - Number(b.queue); });
+  roomState.auto = !q.length;
+  if (q.length) return q;
+  // nobody has been placed on the table yet: show the books being read plus the first 3 planned ones
+  return data.books.filter(isReadingSt).slice(0, 2).concat(data.books.filter(isPlanned).slice(0, 3));
+}
 function minQ(exceptId) { var q = data.books.filter(function (b) { return onTable(b) && String(b.id) !== String(exceptId); }).map(function (b) { return Number(b.queue); }); return q.length ? Math.min.apply(null, q) : 1; }
 function maxQ(exceptId) { var q = data.books.filter(function (b) { return onTable(b) && String(b.id) !== String(exceptId); }).map(function (b) { return Number(b.queue); }); return q.length ? Math.max.apply(null, q) : 1; }
 function hashStr(s) { var h = 7; s = String(s); for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; }
@@ -1834,6 +1864,7 @@ function renderRoom() {
       '<b>+' + extra.length + '</b></button>';
   }
   roomState.ids = nowIds;
+  var hintEl = document.querySelector('.room-hint'); if (hintEl) hintEl.textContent = roomState.auto ? 'Showing your reading list · pick books in Edit → On the home table' : 'Tap a book on the table to open it';
   $('roomItems').innerHTML = html;
 }
 function openQueueList() {
