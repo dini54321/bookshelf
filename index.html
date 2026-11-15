@@ -695,6 +695,10 @@
         <button class="btn light" id="remTest" onclick="testReminder(this)">Send test</button>
       </div>
       <p id="remMsg" class="muted"></p>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line,#e2dac4)">
+        <button class="btn light" type="button" onclick="addCalendarReminder()">📅 Add daily reminder to my calendar</button>
+        <div class="meta" style="margin-top:6px">Works with no internet. It adds a daily repeating event with a notification at the time above to your phone’s calendar. Open the downloaded file and tap Add / Save. To stop it, delete the event in your calendar.</div>
+      </div>
     </div>
     <h3 id="appH" style="display:none">This app</h3>
     <div class="panel" id="appPanel" style="display:none">
@@ -3150,6 +3154,29 @@ function saveLog(e) {
 /* ================= daily reminder ================= */
 var remState = { on: false, hour: 20, time: '20:00' };
 function fmtTime(s) { var p = String(s || '20:00').split(':'), h = Number(p[0]) || 0; return (h % 12 || 12) + ':' + (p[1] || '00') + ' ' + (h < 12 ? 'AM' : 'PM'); }
+
+/* ===== daily reminder as a calendar event (works offline) ===== */
+function addCalendarReminder() {
+  var tm = $('remHour').value || '20:00', p = tm.split(':'), hh = ('0' + (Number(p[0]) || 0)).slice(-2), mm = ('0' + (Number(p[1]) || 0)).slice(-2);
+  var d = new Date(), ymd = d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2);
+  var link = ''; try { link = location.href.split('#')[0]; } catch (e) {}
+  var lines = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//RahDas Bookshelf//Reading reminder//EN', 'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT', 'UID:rahdas-daily-reading@bookshelf',
+    'DTSTAMP:' + ymd + 'T000000Z', 'DTSTART:' + ymd + 'T' + hh + mm + '00',      // no time zone = the time on whatever phone opens it
+    'DURATION:PT15M', 'RRULE:FREQ=DAILY',
+    'SUMMARY:Read your pages - RahDas Bookshelf',
+    'DESCRIPTION:Time to read. Open RahDas Bookshelf and log your pages.' + (link ? '\\n' + link : ''),
+    'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:Time to read', 'TRIGGER:PT0M', 'END:VALARM',
+    'END:VEVENT', 'END:VCALENDAR'
+  ];
+  var blob = new Blob([lines.join('\r\n') + '\r\n'], { type: 'text/calendar;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'rahdas-reading-reminder.ics';
+  document.body.appendChild(a); a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+  toast('Calendar file ready – open it and tap Add');
+}
 function genTopic() {
   var a = new Uint8Array(9); (window.crypto || window.msCrypto).getRandomValues(a);
   $('remNtfy').value = 'rahdas-' + [].map.call(a, function (x) { return (x % 36).toString(36); }).join('');
