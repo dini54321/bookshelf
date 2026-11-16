@@ -54,6 +54,10 @@
     .head-row { display:flex; align-items:center; justify-content:space-between; gap:12px; position:relative; z-index:1 }
     .brand { font:700 21px var(--serif); letter-spacing:.2px }
     .greet { font-size:13px; color:#d5e4db; margin-top:3px }
+    .cnt { display:flex; align-items:flex-start; gap:8px; font-size:13px; color:var(--ink); margin:2px 0 10px; line-height:1.35 }
+    .cnt input { width:auto; margin-top:2px; flex:none }
+    .cnt small { display:block; color:var(--muted); font-size:11.5px }
+    .shimg { width:54px; height:68px; object-fit:cover; border-radius:4px; border:3px solid #a9791f; margin-right:10px }
     .byline { font-size:11px; letter-spacing:.6px; color:#cdb77a; margin:1px 0 0 45px; opacity:.9 }
     .ring-btn {
       background:rgba(255,255,255,.14); border:0; border-radius:16px; padding:7px 12px;
@@ -508,7 +512,7 @@
 <header>
   <div class="head-row">
     <div>
-      <div class="brand"><img class="logo" alt="" src="data:image/png;base64,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">My Bookshelf</div>
+      <div class="brand"><canvas class="logo" id="logoCv" width="108" height="108" aria-hidden="true"></canvas><span id="brandName">My Bookshelf</span></div>
       <div class="byline">designed by RahDas</div>
       <div class="greet" id="greet">A little world between the pages.</div>
     </div>
@@ -720,6 +724,21 @@
         <button class="btn danger" onclick="disconnectApp()">Disconnect</button>
       </div>
     </div>
+    <h3>Your shelf</h3>
+    <div class="panel">
+      <p class="muted" style="margin-top:0">Your name shows on the home page: type <b>Rahdas</b> and it reads “Rahdas Bookshelf”. Leave it empty for “My Bookshelf”. The photo goes into the picture frame on the wall of your shelf. Saved to your Sheet, so it is the same on every device.</p>
+      <label class="lbl">Your name</label>
+      <input id="shName" type="text" maxlength="20" placeholder="e.g. Rahdas" oninput="shDirty=true;shPreview()">
+      <div class="meta" id="shPrev" style="margin:4px 0 10px"></div>
+      <label class="lbl">Photo for the frame</label>
+      <div class="row" style="align-items:center;flex-wrap:wrap;margin-bottom:8px">
+        <img id="shImg" class="shimg" alt="" hidden>
+        <label class="btn light" for="shFile" style="margin:0 8px 0 0">Choose photo</label>
+        <input type="file" id="shFile" accept="image/*" hidden onchange="shPick(this)">
+        <button class="btn light" type="button" id="shRm" onclick="shRemove()" hidden>Remove photo</button>
+      </div>
+      <button class="btn" type="button" onclick="saveShelf(this)">Save</button>
+    </div>
     <h3>Reading targets</h3>
     <div class="panel">
       <p class="muted" style="margin-top:0">Tick a target to show it on the home page; untick to hide it. The reminder email and the home page use these numbers to tell you how many pages to read today.</p>
@@ -848,6 +867,7 @@
         <div class="field" style="flex:1"><label>Total pages</label><input id="totalPages" type="number" inputmode="numeric" min="0"></div>
         <div class="field" style="flex:1"><label>Pages read</label><input id="pagesRead" type="number" inputmode="numeric" min="0"></div>
       </div>
+      <label class="cnt"><input type="checkbox" id="countToday"><span>Count added pages as read today<small>Tick only if you really read them today. Leave it off when you are correcting or filling in older books.</small></span></label>
       <div class="row">
         <div class="field" style="flex:1"><label>Language</label><input id="language" list="dlLanguage"></div>
         <div class="field" style="flex:1"><label>Genre</label><input id="genre" list="dlGenre"></div>
@@ -1104,6 +1124,7 @@
         <div style="flex:1"><label class="lbl">Pages read</label><input id="quPages" type="number" inputmode="numeric" min="0"></div>
         <div style="flex:1"><label class="lbl">Total pages</label><input id="quTotal" type="number" inputmode="numeric" min="0"></div>
       </div>
+      <label class="cnt"><input type="checkbox" id="quCount"><span>Count added pages as read today<small>Off = just correcting the page number (does not change this week, this month or your streak).</small></span></label>
       <div class="meta" id="quHint"></div>
       <div class="savebar"><button type="submit" class="btn" id="quSave">Save</button><button type="button" class="btn light" onclick="quickFull()">✎ Full edit</button></div>
     </form>
@@ -1274,7 +1295,7 @@ function saveConnect() {
 }
 function disconnectApp() {
   if (!confirm('Disconnect this device? Your sheet is not changed; you will need the URL and key to connect again.')) return;
-  lsDel('rb_api_url'); lsDel('rb_api_key'); lsDel('rb_cache');
+  lsDel('rb_api_url'); lsDel('rb_api_key'); lsDel('rb_cache'); lsDel('rb_shelf_name'); lsDel('rb_frame');
   data = { books: [], journal: [], goal: 12, log: [], today: data.today }; render(); showConnect();
 }
 var deferredInstall = null;
@@ -1375,7 +1396,8 @@ function peekHTML(b) {
     '<label class="pk-f">Pages read' + (Number(b.totalPages) ? ' / ' + b.totalPages : '') + '<input id="pkPg" type="number" min="0" inputmode="numeric" value="' + (Number(b.pagesRead) || 0) + '"></label>' +
     '<label class="pk-f">On the home table<select id="pkTb"><option value=""' + (tableModeOf(b) === '' ? ' selected' : '') + '>No – in the cupboard</option><option value="now"' + (tableModeOf(b) === 'now' ? ' selected' : '') + '>Reading now</option><option value="next"' + (tableModeOf(b) === 'next' ? ' selected' : '') + '>Up next</option></select></label>' +
     '<button type="button" class="btn sm" onclick="peekQuickSave(this)">Update</button></div>' +
-    '<div class="meta" style="margin-top:6px">Quick update: change the status or type the page you reached, then tap Update. Pages you add are written to today’s reading log.</div></div>';
+    '<label class="cnt" style="margin-top:8px"><input type="checkbox" id="pkCount"' + (isReadingSt(b) ? ' checked' : '') + '><span>Count added pages as read today</span></label>' +
+    '<div class="meta" style="margin-top:6px">Quick update: change the status or type the page you reached, then tap Update. Tick “Count added pages as read today” only for pages you read today; they then count towards this week, this month and your streak.</div></div>';
   return h + '</div>';
 }
 
@@ -1483,6 +1505,81 @@ function renderTargets() {
   }
   el.innerHTML = (h ? '<div class="tgrow">' + h + '</div>' : '') + nudge;
 }
+/* ===== your shelf: name + frame photo ===== */
+var frameImg = null, frameSrc = '', shDirty = false, shDraftImg = null;
+function shelfName() {
+  var n = (data && data.ui && data.ui.shelfName != null) ? data.ui.shelfName : (loaded ? '' : lsGet('rb_shelf_name'));
+  return String(n || '').trim();
+}
+function shelfTitle() { var n = shelfName(); return n ? n.charAt(0).toUpperCase() + n.slice(1) + ' Bookshelf' : 'My Bookshelf'; }
+function drawLogo() {
+  var cv = $('logoCv'); if (!cv) return;
+  var S = cv.width, x = cv.getContext('2d'), n = shelfName(), word = n ? n.charAt(0).toUpperCase() + n.slice(1) : 'My';
+  x.clearRect(0, 0, S, S);
+  x.fillStyle = '#1f3a2f'; x.beginPath(); x.moveTo(S * .22, 0); x.arcTo(S, 0, S, S, S * .22); x.arcTo(S, S, 0, S, S * .22); x.arcTo(0, S, 0, 0, S * .22); x.arcTo(0, 0, S, 0, S * .22); x.fill();
+  var bks = [[.105, .30, '#d9c59a'], [.09, .40, '#d4623a'], [.115, .34, '#7fb5a0'], [.10, .26, '#e7b04a'], [.085, .32, '#f3ead3']], gap = .02, base = .52;
+  var px = (1 - (bks.reduce(function (a, b) { return a + b[0]; }, 0) + gap * 4)) / 2;
+  bks.forEach(function (b) { x.fillStyle = b[2]; x.fillRect(S * px, S * (base - b[1]), S * b[0], S * b[1]); px += b[0] + gap; });
+  x.fillStyle = '#f3ead3'; x.fillRect(S * .17, S * base, S * .66, S * .03);
+  var fs = S * .2; x.fillStyle = '#f3ead3'; x.textAlign = 'center'; x.textBaseline = 'alphabetic';
+  do { x.font = '700 ' + fs + 'px Georgia, "Times New Roman", serif'; fs -= 2; } while (x.measureText(word).width > S * .8 && fs > 8);
+  x.fillText(word, S / 2, S * .79);
+  x.fillStyle = '#e7b04a'; x.font = '700 ' + S * .075 + 'px sans-serif';
+  if ('letterSpacing' in x) x.letterSpacing = (S * .012) + 'px';
+  x.fillText('BOOKSHELF', S / 2, S * .92);
+  if ('letterSpacing' in x) x.letterSpacing = '0px';
+}
+function paintBrand() {
+  var t = shelfTitle(), b = $('brandName'); if (b) b.textContent = t;
+  document.title = t; drawLogo();
+}
+function redrawRoom() { roomState.drawn = false; try { renderRoom(); } catch (e) {} }
+function setFrame(src) {
+  if (!src) { frameImg = null; redrawRoom(); return; }
+  var im = new Image(); im.onload = function () { frameImg = im; redrawRoom(); }; im.src = src;
+}
+function syncShelfLook() {
+  var src = (data.ui && data.ui.frameImg) || '';
+  if (loaded) { lsSet('rb_shelf_name', shelfName()); if (src !== frameSrc) { frameSrc = src; lsSet('rb_frame', src); setFrame(src); } }
+  paintBrand();
+}
+function shPreview() { var n = $('shName').value.trim(); $('shPrev').textContent = 'Shows as: ' + (n ? n.charAt(0).toUpperCase() + n.slice(1) + ' Bookshelf' : 'My Bookshelf'); }
+function renderShelfSettings() {
+  if (!$('shName') || shDirty) return;
+  $('shName').value = shelfName(); shDraftImg = null;
+  var src = (data.ui && data.ui.frameImg) || '';
+  $('shImg').hidden = !src; if (src) $('shImg').src = src; $('shRm').hidden = !src;
+  shPreview();
+}
+function shPick(inp) {
+  var f = inp.files && inp.files[0]; if (!f) return;
+  var rd = new FileReader();
+  rd.onload = function () {
+    var im = new Image();
+    im.onload = function () {
+      var W = 150, H = 190, c = document.createElement('canvas'); c.width = W; c.height = H;
+      var g = c.getContext('2d'), sc = Math.max(W / im.width, H / im.height), w = im.width * sc, h = im.height * sc;
+      g.drawImage(im, (W - w) / 2, (H - h) / 2, w, h);
+      var q = .8, u = c.toDataURL('image/jpeg', q);
+      while (u.length > 14000 && q > .3) { q -= .1; u = c.toDataURL('image/jpeg', q); }
+      shDraftImg = u; shDirty = true; $('shImg').src = u; $('shImg').hidden = false; $('shRm').hidden = false;
+    };
+    im.onerror = function () { toast('Could not read that photo', true); };
+    im.src = rd.result;
+  };
+  rd.readAsDataURL(f); inp.value = '';
+}
+function shRemove() { shDraftImg = ''; shDirty = true; $('shImg').hidden = true; $('shRm').hidden = true; }
+function saveShelf(btn) {
+  if (!data.ui) data.ui = {};
+  data.ui.shelfName = $('shName').value.trim();
+  if (shDraftImg !== null) { if (shDraftImg) data.ui.frameImg = shDraftImg; else delete data.ui.frameImg; }
+  var ui = {}; Object.keys(data.ui).forEach(function (k) { if (k !== 'tableManual') ui[k] = data.ui[k]; });
+  busy(btn, true);
+  gs('saveUiSettings', ui).then(function () {
+    busy(btn, false); shDirty = false; shDraftImg = null; toast('Saved ✓'); syncShelfLook(); renderShelfSettings();
+  }).catch(function (err) { busy(btn, false); toast(errMsg(err), true); });
+}
 function renderTargetSettings() {
   var el = $('targetBox'); if (!el || el.contains(document.activeElement)) return;
   var c = targetCfg();
@@ -1503,7 +1600,7 @@ function saveTargets(btn) {
 }
 function peekQuickSave(btn) {
   var b = data.books.find(function (x) { return String(x.id) === String(peekId); }); if (!b) return;
-  var pl = quickPayload(b, $('pkSt').value, Math.max(0, Number($('pkPg').value) || 0), Number(b.totalPages) || 0);
+  var pl = quickPayload(b, $('pkSt').value, Math.max(0, Number($('pkPg').value) || 0), Number(b.totalPages) || 0, $('pkCount').checked);
   var tbNow = tableModeOf(b), tbSel = $('pkTb').value, term = TERMINAL.indexOf(pl.status) >= 0;
   var ids = (!term && tbSel !== tbNow) ? tableIdsWith(b.id, tbSel) : null;
   if (ids && tbSel === 'now' && !isReadingSt(pl)) pl.status = 'Currently Reading';
@@ -1606,6 +1703,8 @@ function render() {
   renderPopupSettings();
   renderTargets();
   renderTargetSettings();
+  renderShelfSettings();
+  syncShelfLook();
 
   renderChips();
   renderLibrary();
@@ -1804,6 +1903,7 @@ function editBook(id) {
   setRating(ratingNum(b));
   setFormat(b.kind === 'pdf' ? 'pdf' : 'paper', true);
   $('modalTitle').textContent = 'Edit book';
+  $('countToday').checked = isReadingSt(b);
   queueInit = tableBooks().indexOf(b) >= 0 ? (isReadingSt(b) ? 'now' : 'next') : ''; $('queueSel').value = queueInit;
   $('delBtn').style.display = '';
   paintCover();
@@ -1859,7 +1959,7 @@ function saveBook(e) {
   b.pagesRead = Number(b.pagesRead || 0);
   b.price = b.price === '' ? '' : Number(b.price);
   // Pages the user added by hand go into the reading log (streak/calendar).
-  if (editingBook) { var added = b.pagesRead - (Number(editingBook.pagesRead) || 0); if (added > 0) b.logPages = added; }
+  if (editingBook && $('countToday').checked) { var added = b.pagesRead - (Number(editingBook.pagesRead) || 0); if (added > 0) b.logPages = added; }
 
   // Keep dates and pages tidy so the yearly goal counts correctly.
   if (b.status === 'Completed') {
@@ -1915,6 +2015,7 @@ function renderHomeTables() { renderRoom(); }
 
 /* ================= reading room (home) ================= */
 var roomState = { ids: null, W: 0, drawn: false };
+try { frameSrc = lsGet('rb_frame'); if (frameSrc) { var _fi = new Image(); _fi.onload = function () { frameImg = _fi; redrawRoom(); }; _fi.src = frameSrc; } paintBrand(); } catch (e) {}
 function stLabel(x) { return x === 'DNF' ? 'DNF – not interested' : x; }
 function onTable(b) { return b.queue !== '' && b.queue != null && !isNaN(Number(b.queue)) && ['Completed', 'DNF', 'On Hold'].indexOf(b.status) < 0; }
 function isReadingSt(b) { return ['Currently Reading', 'Partially'].indexOf(b.status) >= 0; }
@@ -1980,10 +2081,16 @@ function drawRoom(cv, W, H, dpr) {
   x.fillStyle = lg(fx, fy, fx + fw, fy + fh, [[0, '#d4a640'], [.5, '#a9791f'], [1, '#d9b04c']]); x.fillRect(fx, fy, fw, fh); x.restore();
   x.fillStyle = '#f1e8d0'; x.fillRect(fx + 4, fy + 4, fw - 8, fh - 8);
   x.fillStyle = '#e4d8b8'; x.fillRect(fx + 8, fy + 8, fw - 16, fh - 16);
+  if (frameImg && frameImg.naturalWidth) {
+    var ax = fx + 8, ay = fy + 8, aw = fw - 16, ah = fh - 16, sc2 = Math.max(aw / frameImg.naturalWidth, ah / frameImg.naturalHeight), dw = frameImg.naturalWidth * sc2, dh = frameImg.naturalHeight * sc2;
+    x.save(); x.beginPath(); x.rect(ax, ay, aw, ah); x.clip(); x.drawImage(frameImg, ax + (aw - dw) / 2, ay + (ah - dh) / 2, dw, dh); x.restore();
+    x.strokeStyle = 'rgba(0,0,0,.35)'; x.lineWidth = 2; x.strokeRect(ax, ay, aw, ah);
+  } else {
   x.strokeStyle = '#27382f'; x.lineWidth = 1.2; x.lineCap = 'round';
   x.beginPath(); x.moveTo(fx + fw / 2, fy + fh - 12); x.lineTo(fx + fw / 2, fy + 16); x.stroke();
   [[-1, .3], [1, .42], [-1, .56], [1, .68]].forEach(function (L) { var yy = fy + fh * L[1]; x.beginPath(); x.moveTo(fx + fw / 2, yy); x.quadraticCurveTo(fx + fw / 2 + L[0] * fw * .22, yy - 8, fx + fw / 2 + L[0] * fw * .3, yy - 16); x.stroke(); });
   x.fillStyle = '#b8472f'; x.beginPath(); x.arc(fx + fw / 2, fy + 16, 3, 0, 7); x.fill();
+  }
   // cupboard
   var cx0 = W * .17, cx1 = W * .83, cy0 = H * .035, cy1 = wallB + H * .006, cw = cx1 - cx0;
   x.save(); x.shadowColor = 'rgba(0,0,0,.65)'; x.shadowBlur = 22; x.shadowOffsetX = 8; x.shadowOffsetY = 6;
@@ -2146,10 +2253,11 @@ function openQuick(id) {
   $('quStatus').value = isPlanned(b) ? 'Currently Reading' : (b.status || 'Currently Reading');
   $('quPages').value = Number(b.pagesRead) || 0;
   $('quTotal').value = Number(b.totalPages) || '';
+  $('quCount').checked = isReadingSt(b);
   $('quHint').textContent = isPlanned(b) ? 'Saving will start this book today.' : '';
   openModal('quModal');
 }
-function quickPayload(b, st, pr, tot) {
+function quickPayload(b, st, pr, tot, count) {
   if (tot && pr > tot) pr = tot;
   var typed = pr;   // only pages typed by hand go into the reading log; auto-filling a finished book does not
   if (st === 'Completed' && tot) pr = tot;
@@ -2160,12 +2268,12 @@ function quickPayload(b, st, pr, tot) {
   if (st === 'Completed') { if (!b.completedOn) pl.completedOn = t; }
   else if (b.status === 'Completed') pl.completedOn = '';
   var added = typed - (Number(b.pagesRead) || 0);
-  if (added > 0) pl.logPages = added;
+  if (added > 0 && count !== false) pl.logPages = added;
   return pl;
 }
 function quickSave(e) {
   e.preventDefault(); if (!quBook) return;
-  var pl = quickPayload(quBook, $('quStatus').value, Math.max(0, Number($('quPages').value) || 0), Math.max(0, Number($('quTotal').value) || 0));
+  var pl = quickPayload(quBook, $('quStatus').value, Math.max(0, Number($('quPages').value) || 0), Math.max(0, Number($('quTotal').value) || 0), $('quCount').checked);
   var btn = $('quSave'); busy(btn, true);
   gs('saveBook', pl).then(function () { busy(btn, false); closeModal('quModal'); toast('Updated ✓'); refresh(true); })
     .catch(function (err) { busy(btn, false); toast(errMsg(err), true); });
@@ -2592,7 +2700,7 @@ function fitLine(x, text, maxW) {
 }
 function footer(k) {
   k.x.textAlign = 'center'; k.x.fillStyle = k.T.sub; k.x.font = '600 30px ' + CARD_FONT;
-  k.x.fillText('RahDas Bookshelf', 540, 1262);
+  k.x.fillText(shelfTitle(), 540, 1262);
   k.x.fillStyle = k.T.accent; k.x.font = '700 32px ' + CARD_FONT;
   k.x.fillText('#RahDasReads', 540, 1308);
 }
@@ -3234,8 +3342,8 @@ function addCalendarReminder() {
     'BEGIN:VEVENT', 'UID:rahdas-daily-reading@bookshelf',
     'DTSTAMP:' + ymd + 'T000000Z', 'DTSTART:' + ymd + 'T' + hh + mm + '00',      // no time zone = the time on whatever phone opens it
     'DURATION:PT15M', 'RRULE:FREQ=DAILY',
-    'SUMMARY:Read your pages - RahDas Bookshelf',
-    'DESCRIPTION:Time to read. Open RahDas Bookshelf and log your pages.' + (link ? '\\n' + link : ''),
+    'SUMMARY:Read your pages - ' + shelfTitle(),
+    'DESCRIPTION:Time to read. Open ' + shelfTitle() + ' and log your pages.' + (link ? '\\n' + link : ''),
     'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:Time to read', 'TRIGGER:PT0M', 'END:VALARM',
     'END:VEVENT', 'END:VCALENDAR'
   ];
