@@ -1,6 +1,6 @@
 /* RahDas Bookshelf service worker. Caches the app itself and the cover pictures so the shelf opens offline.
    Data requests (POST to your script) are never cached or touched here. */
-const VERSION = 'v-099c489b9f';
+const VERSION = 'v-5e11d4bcea';
 const SHELL = 'shell-' + VERSION, IMGS = 'covers-v1';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192-v2.png', 'icon-512-v2.png', 'apple-touch-icon-v2.png'];
 const MAX_IMGS = 250;
