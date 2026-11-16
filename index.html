@@ -58,6 +58,10 @@
     .cnt input { width:auto; margin-top:2px; flex:none }
     .cnt small { display:block; color:var(--muted); font-size:11.5px }
     .shimg { width:54px; height:68px; object-fit:cover; border-radius:4px; border:3px solid #a9791f; margin-right:10px }
+    .lgrow { display:flex; align-items:center; gap:6px; padding:7px 0; border-bottom:1px solid var(--line); flex-wrap:wrap }
+    .lgrow .lgt { flex:1 1 100%; font-size:13px; color:var(--ink) }
+    .lgrow .lgt span { color:var(--muted) }
+    .lgrow input { width:84px; flex:none; padding:8px 10px }
     .byline { font-size:11px; letter-spacing:.6px; color:#cdb77a; margin:1px 0 0 45px; opacity:.9 }
     .ring-btn {
       background:rgba(255,255,255,.14); border:0; border-radius:16px; padding:7px 12px;
@@ -738,6 +742,12 @@
         <button class="btn light" type="button" id="shRm" onclick="shRemove()" hidden>Remove photo</button>
       </div>
       <button class="btn" type="button" onclick="saveShelf(this)">Save</button>
+    </div>
+    <h3>Reading log</h3>
+    <div class="panel">
+      <p class="muted" style="margin-top:0">This week, this month and your streak are counted from these entries only. If a number looks too high, change or delete the wrong entry here. This never changes the pages of the book itself.</p>
+      <div class="meta" id="lgSum" style="margin-bottom:6px"></div>
+      <div id="logFixBox"></div>
     </div>
     <h3>Reading targets</h3>
     <div class="panel">
@@ -1580,6 +1590,44 @@ function saveShelf(btn) {
     busy(btn, false); shDirty = false; shDraftImg = null; toast('Saved ✓'); syncShelfLook(); renderShelfSettings();
   }).catch(function (err) { busy(btn, false); toast(errMsg(err), true); });
 }
+/* ===== reading log: fix wrong entries (does not touch the books) ===== */
+var lgRows = [], lgSure = '';
+function logGroups() {
+  var m = {};
+  (data.log || []).forEach(function (r) {
+    var k = r.date + '|' + (r.bookId || r.bookTitle);
+    if (!m[k]) m[k] = { date: r.date, bookId: r.bookId, title: r.bookTitle, pages: 0 };
+    m[k].pages += Number(r.pages) || 0;
+  });
+  return Object.keys(m).map(function (k) { return m[k]; }).sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : (a.title < b.title ? -1 : 1); });
+}
+function renderLogFix() {
+  var el = $('logFixBox'); if (!el) return;
+  if (el.contains(document.activeElement) && document.activeElement.tagName === 'INPUT') return;
+  lgRows = logGroups();
+  var td = today();
+  $('lgSum').textContent = 'Today ' + pagesSince(td) + ' · this week ' + pagesSince(weekStart()) + ' · this month ' + pagesSince(td.slice(0, 7) + '-01') + ' pages';
+  var shown = lgRows.slice(0, 60);
+  el.innerHTML = shown.length ? shown.map(function (r, i) {
+    return '<div class="lgrow"><div class="lgt"><b>' + esc(r.date) + '</b> <span>·</span> ' + esc(r.title || 'Book') + '</div>' +
+      '<input type="number" min="0" inputmode="numeric" id="lgp' + i + '" value="' + r.pages + '"> <span class="muted">pages</span>' +
+      '<button type="button" class="btn sm" onclick="logFixSave(' + i + ',this)">Save</button>' +
+      '<button type="button" class="btn light sm" onclick="logFixDel(' + i + ',this)">' + (lgSure === i + '|' + r.date ? 'Sure? Tap again' : 'Delete') + '</button></div>';
+  }).join('') + (lgRows.length > 60 ? '<p class="muted">Showing the latest 60 entries.</p>' : '') : '<p class="muted">No reading entries yet.</p>';
+}
+function logFixCall(i, pages, btn) {
+  var r = lgRows[i]; if (!r) return;
+  busy(btn, true, '…');
+  gs('fixLogEntry', { date: r.date, bookId: r.bookId, title: r.title, pages: pages }).then(function () {
+    busy(btn, false); lgSure = ''; toast(pages ? 'Log updated ✓' : 'Entry deleted ✓'); return refresh(true);
+  }).catch(function (err) { busy(btn, false); toast(errMsg(err), true); });
+}
+function logFixSave(i, btn) { logFixCall(i, Math.max(0, Math.floor(Number($('lgp' + i).value) || 0)), btn); }
+function logFixDel(i, btn) {
+  var key = i + '|' + (lgRows[i] && lgRows[i].date);
+  if (lgSure !== key) { lgSure = key; renderLogFix(); return; }
+  logFixCall(i, 0, btn);
+}
 function renderTargetSettings() {
   var el = $('targetBox'); if (!el || el.contains(document.activeElement)) return;
   var c = targetCfg();
@@ -1704,6 +1752,7 @@ function render() {
   renderTargets();
   renderTargetSettings();
   renderShelfSettings();
+  renderLogFix();
   syncShelfLook();
 
   renderChips();
