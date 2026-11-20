@@ -62,6 +62,14 @@
     .lgrow .lgt { flex:1 1 100%; font-size:13px; color:var(--ink) }
     .lgrow .lgt span { color:var(--muted) }
     .lgrow input { width:84px; flex:none; padding:8px 10px }
+    .tg-medal { font-size:15px; margin-left:4px; text-transform:none }
+    .medrow { display:flex; gap:14px; margin-top:8px; font-size:13px; color:var(--ink); padding:0 4px; flex-wrap:wrap }
+    .medrow small { color:var(--muted) }
+    .mdh { margin:14px 0 4px; font-size:14px; color:var(--ink); display:flex; justify-content:space-between }
+    .mdh span { font-weight:600; font-size:13px; color:var(--muted) }
+    .mdrow { display:flex; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px solid var(--line); font-size:13px; color:var(--ink) }
+    .mdrow span:nth-child(2) { color:var(--muted); margin-left:auto }
+    .mdi { width:26px; text-align:center; font-size:16px }
     .byline { font-size:11px; letter-spacing:.6px; color:#cdb77a; margin:1px 0 0 45px; opacity:.9 }
     .ring-btn {
       background:rgba(255,255,255,.14); border:0; border-radius:16px; padding:7px 12px;
@@ -754,6 +762,19 @@
       <p class="muted" style="margin-top:0">Tick a target to show it on the home page; untick to hide it. The reminder email and the home page use these numbers to tell you how many pages to read today.</p>
       <div id="targetBox"></div>
       <button class="btn" type="button" onclick="saveTargets(this)" style="margin-top:8px">Save targets</button>
+    </div>
+    <h3>Medals</h3>
+    <div class="panel" id="medBox">
+      <p class="muted" style="margin-top:0">At the end of every week and every month you earn a medal from how much of your target you reached. Set the levels below.</p>
+      <label class="cnt" style="margin-bottom:8px"><input type="checkbox" id="mdOn"><span>Show medals</span></label>
+      <div class="row" style="gap:8px;margin-bottom:8px">
+        <div class="field" style="flex:1"><label>🥇 Gold at %</label><input id="mdG" type="number" inputmode="numeric" min="1"></div>
+        <div class="field" style="flex:1"><label>🥈 Silver at %</label><input id="mdS" type="number" inputmode="numeric" min="1"></div>
+        <div class="field" style="flex:1"><label>🥉 Bronze at %</label><input id="mdB" type="number" inputmode="numeric" min="1"></div>
+      </div>
+      <button class="btn" type="button" onclick="saveMedals(this)">Save medals</button>
+      <div id="medHist" style="margin-top:12px"></div>
+      <p class="muted" style="margin-bottom:0;font-size:12px">Medals use your current weekly and monthly target for all past weeks and months.</p>
     </div>
     <h3>Book popup fields</h3>
     <div class="panel">
@@ -1499,8 +1520,8 @@ function renderTargets() {
   var c = targetCfg(), td = today(), h = '';
   var rb = $('ringBtn'); if (rb) rb.style.display = c.year.on ? '' : 'none';
   function card(label, done, goal, unit) {
-    var p = Math.min(100, Math.round(done / Math.max(1, goal) * 100));
-    return '<div class="tg"><div class="tg-t">' + label + '</div><b>' + done + '<span> / ' + goal + ' ' + unit + '</span></b><div class="tg-bar"><i style="width:' + p + '%"></i></div></div>';
+    var p = Math.min(100, Math.round(done / Math.max(1, goal) * 100)), mm = medalCfg().on && done > 0 ? medalFor(Math.round(done / Math.max(1, goal) * 100)) : '';
+    return '<div class="tg"><div class="tg-t">' + label + (mm ? ' <span class="tg-medal" title="' + MEDALS[mm].n + ' so far">' + MEDALS[mm].ic + '</span>' : '') + '</div><b>' + done + '<span> / ' + goal + ' ' + unit + '</span></b><div class="tg-bar"><i style="width:' + p + '%"></i></div></div>';
   }
   if (c.week.on) h += card('This week', pagesSince(weekStart()), c.week.n, 'pages');
   if (c.month.on) h += card('This month', pagesSince(td.slice(0, 7) + '-01'), c.month.n, 'pages');
@@ -1513,7 +1534,7 @@ function renderTargets() {
     else { var left = 7 - ((new Date().getDay() + 6) % 7); need = Math.max(1, Math.ceil(Math.max(0, c.week.n - pagesSince(weekStart())) / left)); }
     nudge = '<div class="nudge">⏰ Reading time! Read at least <b>' + need + ' pages</b> today to stay on your ' + (c.month.on ? 'monthly' : 'weekly') + ' target.</div>';
   }
-  el.innerHTML = (h ? '<div class="tgrow">' + h + '</div>' : '') + nudge;
+  el.innerHTML = (h ? '<div class="tgrow">' + h + '</div>' : '') + medalHomeRow() + nudge;
 }
 /* ===== your shelf: name + frame photo ===== */
 var frameImg = null, frameSrc = '', shDirty = false, shDraftImg = null;
@@ -1627,6 +1648,74 @@ function logFixDel(i, btn) {
   var key = i + '|' + (lgRows[i] && lgRows[i].date);
   if (lgSure !== key) { lgSure = key; renderLogFix(); return; }
   logFixCall(i, 0, btn);
+}
+/* ===== medals: end of week / end of month ===== */
+var MEDALS = { gold: { ic: '🥇', n: 'Gold' }, silver: { ic: '🥈', n: 'Silver' }, bronze: { ic: '🥉', n: 'Bronze' } };
+function medalCfg() {
+  var m = (data.ui && data.ui.medals) || {};
+  return { on: m.on !== false, gold: Number(m.gold) || 100, silver: Number(m.silver) || 75, bronze: Number(m.bronze) || 50 };
+}
+function medalFor(pct, c) { c = c || medalCfg(); return pct >= c.gold ? 'gold' : pct >= c.silver ? 'silver' : pct >= c.bronze ? 'bronze' : ''; }
+function pagesBetween(a, b) { return (data.log || []).reduce(function (n, r) { return n + (r.date >= a && r.date <= b ? Number(r.pages) || 0 : 0); }, 0); }
+function firstLogDate() { var d = ''; (data.log || []).forEach(function (r) { if (r.date && (!d || r.date < d)) d = r.date; }); return d; }
+var MON3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function medalPeriods(kind, count) {
+  var cfg = targetCfg(), mc = medalCfg(), out = [], first = firstLogDate(), td = today();
+  var goal = kind === 'week' ? cfg.week.n : cfg.month.n;
+  for (var k = 1; k <= (count || 12); k++) {
+    var from, to, label;
+    if (kind === 'week') {
+      from = addDays(weekStart(), -7 * k); to = addDays(from, 6);
+      var a = from.split('-'), b = to.split('-');
+      label = (+a[2]) + ' ' + MON3[a[1] - 1] + ' – ' + (+b[2]) + ' ' + MON3[b[1] - 1];
+    } else {
+      var y = +td.slice(0, 4), m = +td.slice(5, 7) - k; while (m < 1) { m += 12; y--; }
+      from = y + '-' + pad(m) + '-01'; to = y + '-' + pad(m) + '-' + pad(new Date(Date.UTC(y, m, 0)).getUTCDate());
+      label = MON3[m - 1] + ' ' + y;
+    }
+    if (first && to < first) break;
+    var pages = pagesBetween(from, to), pct = Math.round(pages / Math.max(1, goal) * 100);
+    out.push({ label: label, from: from, to: to, pages: pages, goal: goal, pct: pct, medal: pages > 0 ? medalFor(pct, mc) : '' });
+  }
+  return out;
+}
+function medalChip(m, pct) { return m ? '<span class="mdl">' + MEDALS[m].ic + ' ' + MEDALS[m].n + (pct != null ? ' · ' + pct + '%' : '') + '</span>' : ''; }
+function medalHomeRow() {
+  var c = targetCfg(), mc = medalCfg(); if (!mc.on) return '';
+  var parts = [];
+  [['week', 'Last week'], ['month', 'Last month']].forEach(function (k) {
+    if (!c[k[0]].on) return;
+    var p = medalPeriods(k[0], 1)[0];
+    if (p && p.medal) parts.push('<span>' + k[1] + ' ' + MEDALS[p.medal].ic + ' <small>' + p.pct + '%</small></span>');
+  });
+  return parts.length ? '<div class="medrow">' + parts.join('') + '</div>' : '';
+}
+function renderMedalSettings() {
+  var box = $('medBox'); if (!box) return;
+  if (box.contains(document.activeElement) && document.activeElement.tagName === 'INPUT') return;
+  var mc = medalCfg(), c = targetCfg();
+  $('mdOn').checked = mc.on; $('mdG').value = mc.gold; $('mdS').value = mc.silver; $('mdB').value = mc.bronze;
+  function hist(kind, title) {
+    if (!c[kind].on) return '<div class="meta">' + title + ': turn the ' + kind + 'ly target on (Reading targets) to earn medals.</div>';
+    var ps = medalPeriods(kind, 12), cnt = { gold: 0, silver: 0, bronze: 0 };
+    ps.forEach(function (p) { if (p.medal) cnt[p.medal]++; });
+    var h = '<h4 class="mdh">' + title + ' <span>🥇 ' + cnt.gold + ' · 🥈 ' + cnt.silver + ' · 🥉 ' + cnt.bronze + '</span></h4>';
+    if (!ps.length) return h + '<div class="meta">Medals appear after your first full ' + kind + '.</div>';
+    return h + ps.map(function (p) {
+      return '<div class="mdrow"><span>' + p.label + '</span><span>' + p.pages + ' / ' + p.goal + ' (' + p.pct + '%)</span><span class="mdi">' + (p.medal ? MEDALS[p.medal].ic : '–') + '</span></div>';
+    }).join('');
+  }
+  $('medHist').innerHTML = hist('week', 'Weekly medals') + hist('month', 'Monthly medals');
+}
+function saveMedals(btn) {
+  var g = Number($('mdG').value) || 0, s = Number($('mdS').value) || 0, b = Number($('mdB').value) || 0;
+  if (!(g > s && s > b && b > 0)) { toast('Use Gold > Silver > Bronze, all above 0', true); return; }
+  if (!data.ui) data.ui = {};
+  data.ui.medals = { on: $('mdOn').checked, gold: g, silver: s, bronze: b };
+  var ui = {}; Object.keys(data.ui).forEach(function (k) { if (k !== 'tableManual') ui[k] = data.ui[k]; });
+  busy(btn, true, 'Saving…');
+  gs('saveUiSettings', ui).then(function () { busy(btn, false); render(); toast('Medals saved ✓'); })
+    .catch(function (err) { busy(btn, false); toast(errMsg(err), true); });
 }
 function renderTargetSettings() {
   var el = $('targetBox'); if (!el || el.contains(document.activeElement)) return;
@@ -1753,6 +1842,7 @@ function render() {
   renderTargetSettings();
   renderShelfSettings();
   renderLogFix();
+  renderMedalSettings();
   syncShelfLook();
 
   renderChips();
